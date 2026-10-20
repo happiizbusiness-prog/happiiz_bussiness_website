@@ -2,7 +2,6 @@ import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { SERVICES_DATA } from '../data/servicesData';
 import { PORTFOLIO_PROJECTS } from '../data/portfolioData';
-import { BLOG_POSTS } from '../data/blogsData';
 import { HappiizLogo } from '../components/HappiizLogo';
 import {
   ArrowRight,
@@ -26,7 +25,7 @@ import {
 } from 'lucide-react';
 
 export function HomePage() {
-  const { settings } = useBusiness();
+  const { settings, services, portfolio, testimonials } = useBusiness();
   const {
     navigate,
     openAboutModal,
@@ -34,7 +33,6 @@ export function HomePage() {
     openServicesModal,
     openServiceDetailModal,
     openPortfolioModal,
-    openBlogModal,
     openContactModal,
     openRoadmapModal
   } = useNavigation();
@@ -65,55 +63,10 @@ export function HomePage() {
     }
   };
 
-  // Testimonials dataset for scrolling
-  const TESTIMONIALS = [
-    {
-      quote:
-        'The new responsive web platform transformed our customer inquiry pipeline. In the first 60 days post-launch, our qualified inbound leads increased by 140%. Working with their team was seamless.',
-      author: 'Vikas Malhotra',
-      role: 'Managing Director',
-      org: 'Apex Engineering Tech (Sample)',
-      rating: 5
-    },
-    {
-      quote:
-        'From our embossed visiting cards to corporate letterheads and presentation folders, the brand identity designed by the team gave us immediate authority in high-stakes investor meetings.',
-      author: 'Priya Sundaram',
-      role: 'Chief Operating Officer',
-      org: 'Aura Advisory Partners (Sample)',
-      rating: 5
-    },
-    {
-      quote:
-        'Our Google search rankings moved from page 4 to page 1 for key commercial terms in Delhi NCR. The technical SEO audit and page speed fixes made an undeniable difference.',
-      author: 'Rohan Mehra',
-      role: 'Head of Growth',
-      org: 'Metro Clinics Network (Sample)',
-      rating: 5
-    },
-    {
-      quote:
-        'Their lead generation funnel delivered verified B2B appointments right into our CRM calendar. The WhatsApp alert integration kept our sales reps closing deals in record time.',
-      author: 'Ananya Deshmukh',
-      role: 'VP Sales',
-      org: 'Nexus Logistics Solutions (Sample)',
-      rating: 5
-    },
-    {
-      quote:
-        'The brand stationery, envelopes, and website exceeded our executive board expectations. Fast communication, zero delays, and immaculate design standards.',
-      author: 'Sameer Singhania',
-      role: 'Founder',
-      org: 'Singhania Capital Advisors (Sample)',
-      rating: 5
-    }
-  ];
-
   // Multipliers for seamless infinite marquee scrolling
-  const marqueeServices = [...SERVICES_DATA, ...SERVICES_DATA];
-  const marqueePortfolio = [...PORTFOLIO_PROJECTS, ...PORTFOLIO_PROJECTS, ...PORTFOLIO_PROJECTS];
-  const marqueeTestimonials = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
-  const marqueeBlogs = [...BLOG_POSTS, ...BLOG_POSTS, ...BLOG_POSTS, ...BLOG_POSTS];
+  const marqueeServices = [...services, ...services];
+  const marqueePortfolio = [...portfolio, ...portfolio, ...portfolio];
+  const marqueeTestimonials = [...testimonials, ...testimonials, ...testimonials];
 
   return (
     <div className="space-y-12 sm:space-y-16 md:space-y-24 pb-20">
@@ -197,7 +150,7 @@ export function HomePage() {
             <div className="lg:col-span-5 relative">
               <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 shadow-xl bg-slate-950 aspect-[16/10] sm:aspect-[4/3] group">
                 <img
-                  src="/src/assets/images/hero_digital_agency_1792393542382.jpg"
+                  src={settings.heroImageUrl || "/src/assets/images/hero_digital_agency_1792393542382.jpg"}
                   alt="Happiiz Creative Digital Agency Studio"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   referrerPolicy="no-referrer"
@@ -658,80 +611,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* 5. SCROLLING SECTION: LATEST ARTICLES & STRATEGIC GUIDES (COMPACT SIZE FOR MOBILE) */}
-      <section className="space-y-4 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#0056b3]">
-              <span className="w-2 h-2 rounded-full bg-[#ff5722] animate-ping" />
-              <span>Agency Insights</span>
-              <span aria-hidden="true" className="text-slate-300">·</span>
-              <span className="text-slate-500 font-medium">Continuous Feed (Hover to Pause)</span>
-            </div>
-            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Latest Articles & Strategic Guides
-            </h2>
-          </div>
-          <button
-            onClick={() => openBlogModal()}
-            className="text-xs font-bold text-[#0056b3] hover:text-[#ff5722] flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
-          >
-            <span>Explore All Posts</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Compact Scrolling Blog Track With Small Thumbnail Image (Jo Chalta Rahe, Small Size on Mobile) */}
-        <div className="relative w-full overflow-hidden py-2 select-none">
-          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-[#fafafa] to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-[#fafafa] to-transparent z-10 pointer-events-none" />
-
-          <div className="animate-marquee pause-on-hover flex gap-4 px-4">
-            {marqueeBlogs.map((post, idx) => (
-              <div
-                key={`${post.id}-${idx}`}
-                onClick={() => openBlogModal(post.slug)}
-                className="w-[230px] sm:w-[260px] md:w-[280px] shrink-0 cursor-pointer group p-3 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col justify-between space-y-2"
-              >
-                {/* Small Compact Image with Overlaid Badges */}
-                <div className="relative h-24 sm:h-26 w-full rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                  <img
-                    src={post.image || '/src/assets/images/portfolio_web_design_1792393542453.jpg'}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
-                  <span className="absolute top-2 left-2 bg-slate-950/80 backdrop-blur-xs text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-xs">
-                    {post.category}
-                  </span>
-                  <span className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-xs text-slate-800 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded shadow-2xs">
-                    {post.readTime}
-                  </span>
-                </div>
-
-                {/* Adjusted Title & Excerpt */}
-                <div className="space-y-1">
-                  <h3 className="text-xs sm:text-[13px] font-bold text-slate-900 group-hover:text-[#0056b3] transition-colors leading-snug line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-[10px] sm:text-[11px] text-slate-500 line-clamp-1 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                </div>
-
-                {/* Clean Bottom Action Link without (Popup) */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-[#0056b3] group-hover:text-[#ff5722]">
-                  <span>Read Full Guide</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 6. REQUEST A FREE PROJECT CONSULTATION & ITEMIZED QUOTE (DIRECTLY OPENS IN POPUP) */}
+      {/* 5. REQUEST A FREE PROJECT CONSULTATION & ITEMIZED QUOTE (DIRECTLY OPENS IN POPUP) */}
       <section id="consultation" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-br from-slate-950 via-[#002b66] to-slate-950 text-white rounded-3xl p-6 sm:p-10 lg:p-14 border border-blue-900/60 shadow-xl relative overflow-hidden">
           {/* Subtle Accent Glows */}

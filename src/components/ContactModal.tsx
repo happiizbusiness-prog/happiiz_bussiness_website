@@ -1,19 +1,17 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import {
   X,
-  Mail,
   Phone,
+  Mail,
   MapPin,
-  Clock,
-  Send,
-  Loader2,
-  CheckCircle2,
-  ShieldCheck,
   MessageCircle,
+  Send,
+  CheckCircle2,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 export function ContactModal() {
@@ -30,7 +28,7 @@ export function ContactModal() {
 
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   // Handle ESC key and scroll locking
   useEffect(() => {
@@ -54,10 +52,10 @@ export function ContactModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(null);
 
     if (!formData.name.trim()) {
-      setError('Please provide your name.');
+      setError('Please enter your name.');
       return;
     }
     if (!formData.email.trim() || !formData.email.includes('@')) {
@@ -101,12 +99,11 @@ export function ContactModal() {
       message: ''
     });
     setSuccess(false);
-    closeContactModal();
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeContactModal();
       }}
@@ -114,21 +111,21 @@ export function ContactModal() {
       aria-modal="true"
       aria-labelledby="contact-modal-title"
     >
-      <div className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-5xl max-h-[92vh] bg-white text-slate-900 rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Sticky Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-orange-50/50 sticky top-0 z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-orange-50/50 sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#0056b3]">
-              <span className="w-2 h-2 rounded-full bg-[#ff5722] animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-bold text-[#0056b3]">
+              <Sparkles className="w-3.5 h-3.5 text-[#ff5722]" />
               <span>Direct Communication Channel</span>
             </div>
-            <span className="text-slate-300">/</span>
+            <span className="text-slate-300">·</span>
             <button
               onClick={() => {
                 closeContactModal();
                 navigate('contact');
               }}
-              className="text-xs text-slate-500 hover:text-blue-700 flex items-center gap-1 transition-colors cursor-pointer"
+              className="text-xs text-slate-500 hover:text-[#0056b3] flex items-center gap-1 transition-colors cursor-pointer"
               title="Open standalone page"
             >
               Full Page <ExternalLink className="w-3 h-3" />
@@ -145,61 +142,61 @@ export function ContactModal() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
-          <div>
-            <h2 id="contact-modal-title" className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
+          <div className="space-y-1">
+            <h2 id="contact-modal-title" className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               Get in Touch with {settings.businessName}
             </h2>
-            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-              We respond to all verified enterprise inquiries within 4 business hours. Connect via instant form or direct WhatsApp.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+              We respond to all verified enterprise inquiries within 4 business hours. Connect via instant form or direct WhatsApp hotline.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Contact Cards */}
             <div className="lg:col-span-5 space-y-3">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-4 shadow-xs">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 text-[#0056b3] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-[#0056b3] flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-500 uppercase">Direct Phone</div>
-                    <a href={`tel:${settings.contactNumber}`} className="text-sm font-bold text-slate-900 hover:text-[#0056b3]">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase font-mono">Direct Phone</div>
+                    <a href={`tel:${settings.contactNumber}`} className="text-sm font-bold text-slate-900 hover:text-[#0056b3] transition-colors">
                       {settings.contactNumber}
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 text-[#ff5722] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-[#ff5722] flex items-center justify-center shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-500 uppercase">Executive Email</div>
-                    <a href={`mailto:${settings.businessEmail}`} className="text-xs font-bold text-slate-900 hover:text-[#0056b3] break-all">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase font-mono">Executive Email</div>
+                    <a href={`mailto:${settings.businessEmail}`} className="text-xs font-bold text-slate-900 hover:text-[#0056b3] transition-colors break-all">
                       {settings.businessEmail}
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-500 uppercase">WhatsApp Hotline</div>
-                    <div className="text-xs font-bold text-slate-900">{settings.whatsappNumber}</div>
+                    <div className="text-[10px] font-bold text-slate-500 uppercase font-mono">WhatsApp Hotline</div>
+                    <div className="text-xs font-bold text-emerald-700">{settings.whatsappNumber}</div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-500 uppercase">Corporate Studio</div>
-                    <div className="text-xs font-medium text-slate-700">{settings.businessAddress}</div>
+                    <div className="text-[10px] font-bold text-slate-500 uppercase font-mono">Corporate Studio</div>
+                    <div className="text-xs font-medium text-slate-700 leading-relaxed">{settings.businessAddress}</div>
                   </div>
                 </div>
               </div>
@@ -211,7 +208,7 @@ export function ContactModal() {
                 )}%2C%20I%20would%20like%20to%20discuss%20a%20new%20project.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Open Instant WhatsApp Chat</span>
@@ -219,10 +216,10 @@ export function ContactModal() {
             </div>
 
             {/* Right Contact Form */}
-            <div className="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200">
+            <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
               {success ? (
                 <div className="py-8 text-center space-y-4">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-sm">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <h3 className="text-lg font-bold text-slate-900">Inquiry Sent Successfully!</h3>
@@ -231,15 +228,15 @@ export function ContactModal() {
                   </p>
                   <button
                     onClick={handleReset}
-                    className="px-5 py-2 text-xs font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                    className="px-5 py-2.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-colors cursor-pointer"
                   >
                     Send Another Message
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="space-y-3.5">
                   {error && (
-                    <div className="p-2.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="p-2.5 text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl">
                       {error}
                     </div>
                   )}
@@ -254,7 +251,7 @@ export function ContactModal() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="e.g. Vikas Malhotra"
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0056b3]"
+                        className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0056b3] focus:ring-2 focus:ring-blue-500/10 transition-colors"
                         required
                       />
                     </div>
@@ -268,7 +265,7 @@ export function ContactModal() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="+91 98765 43210"
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0056b3]"
+                        className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0056b3] focus:ring-2 focus:ring-blue-500/10 transition-colors"
                         required
                       />
                     </div>
@@ -284,7 +281,7 @@ export function ContactModal() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         placeholder="vikas@company.com"
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0056b3]"
+                        className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0056b3] focus:ring-2 focus:ring-blue-500/10 transition-colors"
                         required
                       />
                     </div>
@@ -296,7 +293,7 @@ export function ContactModal() {
                       <select
                         value={formData.service}
                         onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0056b3] bg-white"
+                        className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3] transition-colors"
                       >
                         <option value="Website Design & Development">Website Design & Development</option>
                         <option value="Digital Marketing & Ads">Digital Marketing & Ads</option>
@@ -321,7 +318,7 @@ export function ContactModal() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       placeholder="Tell us what you want to achieve, timeline, and current challenge..."
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#0056b3] resize-none"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#0056b3] focus:ring-2 focus:ring-blue-500/10 transition-colors resize-none"
                       required
                     />
                   </div>
@@ -329,9 +326,10 @@ export function ContactModal() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-3 text-xs font-bold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className="w-full py-3.5 text-xs font-bold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     style={{
-                      background: 'linear-gradient(135deg, #0056b3 0%, #004ea8 100%)'
+                      background: 'linear-gradient(135deg, #0056b3 0%, #ff5722 100%)',
+                      boxShadow: '0 8px 20px -4px rgba(255, 87, 34, 0.4)'
                     }}
                   >
                     {submitting ? (
@@ -341,7 +339,7 @@ export function ContactModal() {
                       </>
                     ) : (
                       <>
-                        <Send className="w-3.5 h-3.5 text-orange-300" />
+                        <Send className="w-3.5 h-3.5 text-white" />
                         <span>Send Message Directly</span>
                       </>
                     )}

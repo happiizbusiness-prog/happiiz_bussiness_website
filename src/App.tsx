@@ -8,7 +8,6 @@ import { QuoteModal } from './components/QuoteModal';
 import { ServicesModal } from './components/ServicesModal';
 import { ServiceDetailModal } from './components/ServiceDetailModal';
 import { PortfolioModal } from './components/PortfolioModal';
-import { BlogModal } from './components/BlogModal';
 import { ContactModal } from './components/ContactModal';
 import { RoadmapModal } from './components/RoadmapModal';
 import { WhatsAppButton } from './components/WhatsAppButton';
@@ -114,7 +113,6 @@ function AppContent() {
       <ServicesModal />
       <ServiceDetailModal />
       <PortfolioModal />
-      <BlogModal />
       <ContactModal />
       <RoadmapModal />
 

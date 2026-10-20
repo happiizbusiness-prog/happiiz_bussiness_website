@@ -12,7 +12,6 @@ export function Footer() {
     openServicesModal,
     openServiceDetailModal,
     openPortfolioModal,
-    openBlogModal,
     openContactModal
   } = useNavigation();
   const currentYear = new Date().getFullYear();
@@ -183,11 +182,6 @@ export function Footer() {
               <li>
                 <button onClick={() => openAboutModal()} className="hover:text-white transition-colors cursor-pointer">
                   About Us
-                </button>
-              </li>
-              <li>
-                <button onClick={() => openBlogModal()} className="hover:text-white transition-colors cursor-pointer">
-                  Agency Insights Blog
                 </button>
               </li>
               <li>

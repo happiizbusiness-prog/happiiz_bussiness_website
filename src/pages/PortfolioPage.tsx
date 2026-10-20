@@ -115,15 +115,15 @@ export function PortfolioPage() {
           aria-modal="true"
         >
           <div className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-orange-50/50 sticky top-0 z-10">
               <div className="flex items-center gap-2 text-xs">
-                <span className="font-semibold text-blue-700">{activeProject.category}</span>
-                <span className="text-slate-300">/</span>
-                <span className="text-slate-500">Sample Showcase</span>
+                <span className="font-bold text-[#0056b3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">{activeProject.category}</span>
+                <span className="text-slate-300">·</span>
+                <span className="text-slate-500 font-medium">Sample Showcase</span>
               </div>
               <button
                 onClick={() => setActiveProject(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>

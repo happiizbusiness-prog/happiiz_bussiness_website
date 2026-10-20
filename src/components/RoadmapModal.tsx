@@ -6,10 +6,8 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
-  ShieldCheck,
   ChevronRight,
-  Zap,
-  Award
+  Zap
 } from 'lucide-react';
 
 export function RoadmapModal() {
@@ -43,7 +41,7 @@ export function RoadmapModal() {
       title: 'Discovery & Strategic Audit',
       time: 'Day 1–3',
       image: '/src/assets/images/roadmap_discovery_audit_1792395845318.jpg',
-      accentColor: 'border-blue-500 text-blue-400 bg-blue-500/10',
+      accentColor: 'border-blue-200 text-blue-700 bg-blue-50',
       badgeBg: 'bg-blue-600',
       summary: 'Deep-dive analysis of your current market positioning, competitor funnel metrics, and commercial target audiences.',
       skills: ['Competitor Intel', 'SEO Crawl Audit', 'User Personas', 'Funnel Mapping'],
@@ -55,7 +53,7 @@ export function RoadmapModal() {
       title: 'Information Architecture & Wireframes',
       time: 'Day 4–7',
       image: '/src/assets/images/portfolio_web_design_1792393542453.jpg',
-      accentColor: 'border-sky-500 text-sky-400 bg-sky-500/10',
+      accentColor: 'border-sky-200 text-sky-700 bg-sky-50',
       badgeBg: 'bg-sky-600',
       summary: 'Structuring page hierarchy, conversion path friction removal, and interactive Figma layout wireframing.',
       skills: ['Figma Wireframing', 'UX Flow Logic', 'Content Hierarchy', 'Mobile Grid Design'],
@@ -67,7 +65,7 @@ export function RoadmapModal() {
       title: 'Visual Identity & Stationery Craft',
       time: 'Day 8–12',
       image: '/src/assets/images/portfolio_branding_identity_1792393543752.jpg',
-      accentColor: 'border-orange-500 text-orange-400 bg-orange-500/10',
+      accentColor: 'border-orange-200 text-orange-700 bg-orange-50',
       badgeBg: 'bg-[#ff5722]',
       summary: 'Designing high-impact brand collateral, master logos, CMYK visiting cards, corporate letterheads, and digital design systems.',
       skills: ['Design Systems', 'CMYK Print Setup', 'Embossed Cards', 'Letterhead Specs'],
@@ -79,7 +77,7 @@ export function RoadmapModal() {
       title: 'Clean Modern Engineering',
       time: 'Day 13–18',
       image: '/src/assets/images/roadmap_code_engineering_1792395847305.jpg',
-      accentColor: 'border-amber-500 text-amber-400 bg-amber-500/10',
+      accentColor: 'border-amber-200 text-amber-700 bg-amber-50',
       badgeBg: 'bg-amber-600',
       summary: 'Production-grade frontend coding using React 19, TypeScript, Tailwind CSS, and lightweight backend APIs with zero bloat.',
       skills: ['React 19 & Next.js', 'Strict TypeScript', 'Tailwind CSS', 'Zero-Bloat APIs'],
@@ -91,7 +89,7 @@ export function RoadmapModal() {
       title: 'Speed & Core Web Vitals Audit',
       time: 'Day 19–21',
       image: '/src/assets/images/roadmap_launch_performance_1792395846648.jpg',
-      accentColor: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+      accentColor: 'border-emerald-200 text-emerald-700 bg-emerald-50',
       badgeBg: 'bg-emerald-600',
       summary: 'Rigorous automated diagnostics, Lighthouse 99+ optimization, mobile responsiveness verification, and security testing.',
       skills: ['99+ Lighthouse', 'LCP < 2.0s', 'Accessibility WCAG', 'Cross-Device QA'],
@@ -103,7 +101,7 @@ export function RoadmapModal() {
       title: 'Secure Cloud Launch & Analytics',
       time: 'Day 22–24',
       image: '/src/assets/images/hero_digital_agency_1792393542382.jpg',
-      accentColor: 'border-purple-500 text-purple-400 bg-purple-500/10',
+      accentColor: 'border-purple-200 text-purple-700 bg-purple-50',
       badgeBg: 'bg-purple-600',
       summary: 'Custom domain DNS provisioning, SSL encryption, Google Analytics 4 tracking, and WhatsApp CRM pipeline integration.',
       skills: ['Cloud Run CDN', 'DNS & SSL Config', 'GA4 Analytics', 'WhatsApp Hotleads'],
@@ -115,7 +113,7 @@ export function RoadmapModal() {
       title: 'Continuous Lead Growth & Support',
       time: 'Continuous Growth',
       image: '/src/assets/images/portfolio_digital_campaign_1792393543250.jpg',
-      accentColor: 'border-pink-500 text-pink-400 bg-pink-500/10',
+      accentColor: 'border-pink-200 text-pink-700 bg-pink-50',
       badgeBg: 'bg-pink-600',
       summary: 'Ongoing technical maintenance, organic search ranking scaling, ad conversion monitoring, and dedicated WhatsApp support.',
       skills: ['Inbound Pipelines', 'Search Rankings', 'Technical SLA', 'Dedicated Care'],
@@ -125,7 +123,7 @@ export function RoadmapModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/80 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeRoadmapModal();
       }}
@@ -133,23 +131,23 @@ export function RoadmapModal() {
       aria-modal="true"
       aria-labelledby="roadmap-modal-title"
     >
-      <div className="relative w-full max-w-5xl max-h-[92vh] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white rounded-3xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-5xl max-h-[92vh] bg-white text-slate-900 rounded-3xl shadow-2xl border border-slate-200/90 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Sticky Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/70 via-white to-orange-50/50 sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-orange-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-bold text-[#0056b3]">
+              <Sparkles className="w-3.5 h-3.5 text-[#ff5722]" />
               <span>Our Delivery Blueprint</span>
             </div>
-            <span className="text-slate-600">·</span>
-            <span className="text-xs font-bold text-slate-300 hidden sm:inline">
+            <span className="text-slate-300">·</span>
+            <span className="text-xs font-bold text-slate-500 hidden sm:inline">
               Image Previews, Milestone Markings & Small Skills
             </span>
           </div>
 
           <button
             onClick={closeRoadmapModal}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -159,11 +157,11 @@ export function RoadmapModal() {
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
           {/* Hero Header */}
-          <div className="space-y-2">
-            <h2 id="roadmap-modal-title" className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+          <div className="space-y-1">
+            <h2 id="roadmap-modal-title" className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               Our 7-Step Proven Delivery Roadmap
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
               Every project follows our disciplined 7–phase execution protocol with verified markings, real deliverables, and specialized engineering skills.
             </p>
           </div>
@@ -172,9 +170,9 @@ export function RoadmapModal() {
           <div className="relative pt-2 pb-1 hidden sm:block">
             <div className="relative flex items-center justify-between">
               {/* Connected Line Track */}
-              <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-1 bg-slate-800 rounded-full z-0" />
+              <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-1 bg-slate-200 rounded-full z-0" />
               <div
-                className="absolute top-1/2 left-4 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-500 via-orange-500 to-emerald-400 rounded-full z-0 transition-all duration-500"
+                className="absolute top-1/2 left-4 -translate-y-1/2 h-1 bg-gradient-to-r from-[#0056b3] via-[#0284c7] to-[#ff5722] rounded-full z-0 transition-all duration-500"
                 style={{ width: `${(activeStep / (ROADMAP_STEPS.length - 1)) * 95}%` }}
               />
 
@@ -187,15 +185,15 @@ export function RoadmapModal() {
                   }`}
                 >
                   <div
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-black text-xs font-mono shadow-md transition-all ${
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-black text-xs font-mono shadow-sm transition-all ${
                       activeStep === idx
-                        ? 'bg-gradient-to-br from-[#ff5722] to-amber-500 text-white ring-4 ring-orange-500/30'
-                        : 'bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-500'
+                        ? 'bg-gradient-to-br from-[#0056b3] to-[#ff5722] text-white ring-4 ring-orange-500/20 shadow-md'
+                        : 'bg-white text-slate-700 border border-slate-300 hover:border-blue-400'
                     }`}
                   >
                     {step.step}
                   </div>
-                  <span className="text-[10px] font-bold text-slate-300 whitespace-nowrap">
+                  <span className={`text-[10px] font-bold whitespace-nowrap ${activeStep === idx ? 'text-[#0056b3]' : 'text-slate-500'}`}>
                     {step.phase.split('·')[1]?.trim() || step.title}
                   </span>
                 </button>
@@ -204,11 +202,11 @@ export function RoadmapModal() {
           </div>
 
           {/* Active Step Spotlight Card */}
-          <div className="bg-slate-900/95 rounded-2xl border border-slate-700/80 p-5 sm:p-7 shadow-xl">
+          <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-xs">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               {/* Image Preview with Milestone Overlay */}
               <div className="lg:col-span-5 relative">
-                <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-700 shadow-xl bg-slate-950 group">
+                <div className="relative aspect-[16/10] rounded-xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-900 group">
                   <img
                     src={ROADMAP_STEPS[activeStep].image}
                     alt={ROADMAP_STEPS[activeStep].title}
@@ -223,7 +221,7 @@ export function RoadmapModal() {
                     <span>MILESTONE {ROADMAP_STEPS[activeStep].step}</span>
                   </div>
 
-                  <div className="absolute top-2.5 right-2.5 bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-md">
+                  <div className="absolute top-2.5 right-2.5 bg-[#ff5722] text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-md">
                     ⏱ {ROADMAP_STEPS[activeStep].time}
                   </div>
 
@@ -244,32 +242,32 @@ export function RoadmapModal() {
                   <span className={`px-2.5 py-0.5 rounded-md text-xs font-black font-mono border ${ROADMAP_STEPS[activeStep].accentColor}`}>
                     STEP {ROADMAP_STEPS[activeStep].step}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-white text-slate-700 border border-slate-200">
                     {ROADMAP_STEPS[activeStep].phase}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-md text-xs font-mono text-amber-400 bg-amber-950/40 border border-amber-800/60">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-mono text-orange-700 bg-orange-50 border border-orange-200">
                     {ROADMAP_STEPS[activeStep].time}
                   </span>
                 </div>
 
-                <h3 className="text-lg sm:text-2xl font-black text-white">
+                <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
                   {ROADMAP_STEPS[activeStep].title}
                 </h3>
 
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   {ROADMAP_STEPS[activeStep].summary}
                 </p>
 
                 {/* Small Skills Pills */}
                 <div className="space-y-1.5 pt-1">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     Specialized Technical Skills:
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {ROADMAP_STEPS[activeStep].skills.map((skill, si) => (
                       <span
                         key={si}
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700 hover:border-orange-500/60 transition-all shadow-xs"
+                        className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white text-slate-800 border border-slate-200 shadow-2xs hover:border-[#0056b3] transition-all"
                       >
                         ⚡ {skill}
                       </span>
@@ -278,10 +276,10 @@ export function RoadmapModal() {
                 </div>
 
                 {/* Milestone Outcome */}
-                <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-xs text-emerald-300 flex items-center gap-2 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>
-                    <strong className="text-white">Milestone Outcome:</strong> {ROADMAP_STEPS[activeStep].outcome}
+                    <strong className="text-slate-900">Milestone Outcome:</strong> {ROADMAP_STEPS[activeStep].outcome}
                   </span>
                 </div>
 
@@ -290,13 +288,13 @@ export function RoadmapModal() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setActiveStep((prev) => (prev > 0 ? prev - 1 : ROADMAP_STEPS.length - 1))}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-200 transition-colors cursor-pointer shadow-2xs"
                     >
                       ← Previous
                     </button>
                     <button
                       onClick={() => setActiveStep((prev) => (prev < ROADMAP_STEPS.length - 1 ? prev + 1 : 0))}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-200 transition-colors cursor-pointer shadow-2xs"
                     >
                       Next Step →
                     </button>
@@ -307,7 +305,7 @@ export function RoadmapModal() {
                       closeRoadmapModal();
                       openQuoteModal(`Roadmap: Step ${ROADMAP_STEPS[activeStep].step} (${ROADMAP_STEPS[activeStep].title})`);
                     }}
-                    className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#0056b3] to-[#ff5722] text-xs font-bold text-white hover:opacity-95 transition-all shadow-md cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0056b3] to-[#ff5722] text-xs font-bold text-white hover:opacity-95 transition-all shadow-md cursor-pointer"
                   >
                     Consult on this Step
                   </button>
@@ -324,19 +322,19 @@ export function RoadmapModal() {
                 onClick={() => setActiveStep(idx)}
                 className={`group cursor-pointer rounded-xl p-2.5 transition-all duration-200 flex flex-col justify-between space-y-2 border ${
                   activeStep === idx
-                    ? 'bg-slate-800/95 border-orange-500 shadow-lg ring-2 ring-orange-500/20'
-                    : 'bg-slate-900/70 border-slate-800 hover:bg-slate-800/80 hover:border-slate-600'
+                    ? 'bg-blue-50/70 border-[#0056b3] shadow-md ring-2 ring-blue-500/20'
+                    : 'bg-white border-slate-200 hover:border-blue-300 hover:shadow-sm'
                 }`}
               >
                 {/* Thumbnail Image */}
-                <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-slate-950 border border-slate-800">
+                <div className="relative aspect-[16/10] rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
                   <img
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute top-1 left-1 bg-slate-950/90 text-[8px] font-black font-mono text-white px-1 py-0.2 rounded">
+                  <div className="absolute top-1 left-1 bg-slate-900/90 text-[8px] font-black font-mono text-white px-1 py-0.2 rounded">
                     {item.step}
                   </div>
                 </div>
@@ -345,14 +343,14 @@ export function RoadmapModal() {
                   <div className="text-[8px] font-mono text-slate-400 uppercase tracking-wider">
                     {item.phase}
                   </div>
-                  <h4 className="text-[11px] font-bold text-white group-hover:text-blue-300 transition-colors leading-tight line-clamp-1">
+                  <h4 className="text-[11px] font-bold text-slate-900 group-hover:text-[#0056b3] transition-colors leading-tight line-clamp-1">
                     {item.title}
                   </h4>
                 </div>
 
                 {/* Small Skill Tag */}
-                <div className="pt-1 border-t border-slate-800">
-                  <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-slate-950 text-slate-300 border border-slate-800 font-medium truncate block text-center">
+                <div className="pt-1 border-t border-slate-100">
+                  <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200 font-medium truncate block text-center">
                     {item.skills[0]}
                   </span>
                 </div>
@@ -361,9 +359,9 @@ export function RoadmapModal() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Full milestone tracking provided to clients via live dashboard and WhatsApp updates.</span>
             </div>
             <button
