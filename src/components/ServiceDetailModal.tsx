@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export function ServiceDetailModal() {
-  const { settings } = useBusiness();
+  const { settings, services } = useBusiness();
   const {
     selectedServiceSlug,
     closeServiceDetailModal,
@@ -48,7 +48,9 @@ export function ServiceDetailModal() {
 
   if (!selectedServiceSlug) return null;
 
-  const service = SERVICES_DATA.find((s) => s.slug === selectedServiceSlug);
+  const service =
+    services.find((s) => s.slug === selectedServiceSlug || s.id === selectedServiceSlug) ||
+    SERVICES_DATA.find((s) => s.slug === selectedServiceSlug || s.id === selectedServiceSlug);
 
   if (!service) return null;
 
@@ -110,6 +112,17 @@ export function ServiceDetailModal() {
               <Sparkles className="w-3.5 h-3.5 text-[#ff5722]" />
               <span>{service.categoryLabel}</span>
             </div>
+
+            {service.imageUrl && (
+              <div className="relative aspect-[21/9] sm:aspect-[2.4/1] w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900">
+                <img
+                  src={service.imageUrl}
+                  alt={service.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+              </div>
+            )}
 
             <h2 id="service-detail-title" className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
               {service.title}

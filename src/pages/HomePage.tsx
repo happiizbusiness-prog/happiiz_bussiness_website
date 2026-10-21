@@ -333,7 +333,7 @@ export function HomePage() {
                       {getServiceIcon(srv.slug)}
                     </div>
                     <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                      {(idx % SERVICES_DATA.length) + 1 < 10 ? `0${(idx % SERVICES_DATA.length) + 1}` : (idx % SERVICES_DATA.length) + 1}
+                      {(idx % (services.length || 1)) + 1 < 10 ? `0${(idx % (services.length || 1)) + 1}` : (idx % (services.length || 1)) + 1}
                     </span>
                   </div>
 

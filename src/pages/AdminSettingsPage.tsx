@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { HappiizLogo } from '../components/HappiizLogo';
-import { ServiceDetail, PortfolioProject, TestimonialItem } from '../types';
+import { ImageUploadField } from '../components/ImageUploadField';
+import { ServiceDetail, PortfolioProject, TestimonialItem, QuoteInquiry } from '../types';
 import {
   Save,
   CheckCircle2,
@@ -33,7 +34,9 @@ import {
   Layers,
   KeyRound,
   FileText,
-  AlertCircle
+  AlertCircle,
+  X,
+  PhoneCall
 } from 'lucide-react';
 
 export function AdminSettingsPage() {
@@ -55,6 +58,7 @@ export function AdminSettingsPage() {
     deleteTestimonial,
     inquiries,
     refreshInquiries,
+    addSampleInquiry,
     updateInquiryStatus,
     deleteInquiry,
     adminUser,
@@ -63,7 +67,12 @@ export function AdminSettingsPage() {
     updateAdminProfile
   } = useBusiness();
 
-  const { navigate } = useNavigation();
+  const {
+    navigate,
+    openServiceDetailModal,
+    openPortfolioModal,
+    openAboutModal
+  } = useNavigation();
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
@@ -76,7 +85,7 @@ export function AdminSettingsPage() {
     'inquiries' | 'branding' | 'contact' | 'social' | 'services' | 'portfolio' | 'testimonials' | 'about' | 'admin_profile'
   >('inquiries');
 
-  // Success alert
+  // Success alert message
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const showNotification = (msg: string) => {
@@ -93,6 +102,8 @@ export function AdminSettingsPage() {
     const success = loginAdmin(loginEmail, loginPassword);
     if (!success) {
       setLoginError('Invalid Admin ID or Password. Try admin@happiiz.com and admin123.');
+    } else {
+      showNotification('Welcome back, Admin!');
     }
   };
 
@@ -100,6 +111,7 @@ export function AdminSettingsPage() {
     setLoginEmail('admin@happiiz.com');
     setLoginPassword('admin123');
     loginAdmin('admin@happiiz.com', 'admin123');
+    showNotification('Welcome back, Admin! (Logged in via One-Tap)');
   };
 
   // -------------------------------------------------------------
@@ -144,22 +156,23 @@ export function AdminSettingsPage() {
     newPassword: '',
     confirmPassword: ''
   });
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   // Inquiries filter & search
   const [inquiryFilter, setInquiryFilter] = useState<'all' | 'new' | 'contacted' | 'quoted' | 'closed'>('all');
   const [inquirySearch, setInquirySearch] = useState('');
 
-  // Editing state for Service
+  // Modals state for View/Add/Edit to guarantee they pop up in front of the user
+  const [viewingInquiry, setViewingInquiry] = useState<QuoteInquiry | null>(null);
   const [editingService, setEditingService] = useState<ServiceDetail | null>(null);
   const [isAddingService, setIsAddingService] = useState(false);
-
-  // Editing state for Project
+  const [newServiceImage, setNewServiceImage] = useState('');
   const [editingProject, setEditingProject] = useState<PortfolioProject | null>(null);
   const [isAddingProject, setIsAddingProject] = useState(false);
-
-  // Editing state for Testimonial
+  const [newProjectImage, setNewProjectImage] = useState('/src/assets/images/portfolio_web_design_1792393542453.jpg');
   const [editingTestimonial, setEditingTestimonial] = useState<TestimonialItem | null>(null);
   const [isAddingTestimonial, setIsAddingTestimonial] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Handle Logo Upload file
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +182,7 @@ export function AdminSettingsPage() {
       reader.onload = () => {
         if (typeof reader.result === 'string') {
           setBrandForm((prev) => ({ ...prev, logoUrl: reader.result as string }));
+          showNotification('Custom logo uploaded! Click Save to apply.');
         }
       };
       reader.readAsDataURL(file);
@@ -310,34 +324,72 @@ export function AdminSettingsPage() {
   const newInquiriesCount = inquiries.filter((q) => q.status === 'new').length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Admin Header Bar */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Top Admin Header Bar with Direct Profile Link, View Site, and Logout */}
       <div className="p-5 sm:p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0056b3] to-[#ff5722] text-white font-black text-lg flex items-center justify-center shadow-md">
+        {/* Clickable Admin Profile Card */}
+        <div
+          onClick={() => {
+            setIsProfileModalOpen(true);
+            setActiveTab('admin_profile');
+            showNotification('Opened Admin Profile & Security Settings.');
+          }}
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-3.5 cursor-pointer group text-left"
+          title="Click to view or edit Admin Profile Settings"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0056b3] to-[#ff5722] text-white font-black text-lg flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
             {adminUser.name.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-[#0056b3] transition-colors">
                 {adminUser.name} · Central Admin Portal
               </h1>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Online" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title="Online & Authorized" />
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-              <span>{adminUser.email}</span>
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mt-0.5">
+              <span className="underline decoration-slate-300 group-hover:text-slate-800">{adminUser.email}</span>
               <span>·</span>
               <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono text-[10px] font-bold">
                 ROOT PRIVILEGES
+              </span>
+              <span>·</span>
+              <span className="text-[10px] text-blue-600 font-bold group-hover:underline flex items-center gap-0.5">
+                <Lock className="w-3 h-3" />
+                Profile Settings
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        {/* Action Buttons: Profile, View Live Site, Logout */}
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
-            onClick={() => navigate('home')}
-            className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+            onClick={() => {
+              setIsProfileModalOpen(true);
+              setActiveTab('admin_profile');
+              showNotification('Switched to Admin Profile Settings.');
+            }}
+            className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === 'admin_profile' || isProfileModalOpen
+                ? 'bg-[#0056b3] text-white shadow-xs'
+                : 'text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200'
+            }`}
+            title="Update Admin Name, Email, or Password"
+          >
+            <Lock className="w-3.5 h-3.5 text-blue-500" />
+            <span>Profile Settings</span>
+          </button>
+
+          <button
+            onClick={() => {
+              navigate('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="px-3.5 py-2 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+            title="Go to Live Website"
           >
             <Eye className="w-3.5 h-3.5 text-slate-500" />
             <span>View Live Site</span>
@@ -345,11 +397,12 @@ export function AdminSettingsPage() {
 
           <button
             onClick={() => {
-              if (window.confirm('Are you sure you want to log out from the Admin Portal?')) {
-                logoutAdmin();
-              }
+              logoutAdmin();
+              navigate('home');
+              showNotification('Logged out from Admin Portal successfully.');
             }}
-            className="px-4 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-3.5 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+            title="Sign Out immediately and return to website"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -357,7 +410,7 @@ export function AdminSettingsPage() {
         </div>
       </div>
 
-      {/* Global Success Notification */}
+      {/* Global Success Notification Toast */}
       {saveMessage && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
@@ -372,6 +425,61 @@ export function AdminSettingsPage() {
           </button>
         </div>
       )}
+
+      {/* Quick Actions Shortcuts Toolbar */}
+      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/70 via-white to-orange-50/50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="flex items-center gap-1.5 font-bold text-slate-800">
+          <Sparkles className="w-4 h-4 text-[#ff5722]" />
+          <span>Quick Admin Actions:</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              setActiveTab('services');
+              setIsAddingService(true);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-blue-50 border border-slate-200 text-[#0056b3] font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Service</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('portfolio');
+              setIsAddingProject(true);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 text-emerald-700 font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Project</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('testimonials');
+              setIsAddingTestimonial(true);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-amber-700 font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Review</span>
+          </button>
+
+          <button
+            onClick={() => {
+              addSampleInquiry();
+              setActiveTab('inquiries');
+              showNotification('Sample Client Quotation added!');
+            }}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#0056b3] to-[#ff5722] text-white font-bold transition-all shadow-2xs flex items-center gap-1 hover:opacity-95 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>+ Simulate Quote Lead</span>
+          </button>
+        </div>
+      </div>
 
       {/* Top KPI Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -524,12 +632,29 @@ export function AdminSettingsPage() {
                   </p>
                 </div>
 
-                <button
-                  onClick={refreshInquiries}
-                  className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer self-start sm:self-auto"
-                >
-                  🔄 Refresh List
-                </button>
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                  <button
+                    onClick={() => {
+                      addSampleInquiry();
+                      showNotification('Sample client quotation added! View details below.');
+                    }}
+                    className="px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] hover:opacity-95 rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                    title="Simulate a real client submitting the Free Quote Form"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>+ Simulate Client Quote</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      refreshInquiries();
+                      showNotification('Refreshed inquiries list.');
+                    }}
+                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer"
+                  >
+                    🔄 Refresh
+                  </button>
+                </div>
               </div>
 
               {/* Filters & Search */}
@@ -564,14 +689,27 @@ export function AdminSettingsPage() {
 
               {/* Inquiries Cards List */}
               {filteredInquiries.length === 0 ? (
-                <div className="py-16 text-center space-y-3">
-                  <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                <div className="py-16 text-center space-y-3 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto text-slate-400 shadow-2xs border border-slate-200">
                     <MessageCircle className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-slate-700">No quotation requests found</h3>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    When visitors submit quote requests on the live site, their complete details and WhatsApp contact will appear here instantly.
+                    When visitors submit "Request a Free Quote" on the website, their details and instant WhatsApp chat will appear here.
                   </p>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        addSampleInquiry();
+                        showNotification('Sample quotation added! Test replying or changing status.');
+                      }}
+                      className="px-4 py-2 text-xs font-bold text-[#0056b3] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-[#ff5722]" />
+                      <span>Add Demo Quotation Lead to Test Portal</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-3.5">
@@ -587,7 +725,7 @@ export function AdminSettingsPage() {
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <span className="font-bold text-sm text-slate-900">{inq.name}</span>
                             <span className="text-slate-300">·</span>
                             <span className="text-xs font-semibold text-[#0056b3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
@@ -607,7 +745,7 @@ export function AdminSettingsPage() {
                             <select
                               value={inq.status || 'new'}
                               onChange={(e) => updateInquiryStatus(inq.id, e.target.value as any)}
-                              className="text-[11px] font-bold rounded-lg border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none"
+                              className="text-[11px] font-bold rounded-lg border border-slate-200 bg-white px-2 py-1 text-slate-700 focus:outline-none cursor-pointer"
                             >
                               <option value="new">🟡 New</option>
                               <option value="contacted">🔵 Contacted</option>
@@ -617,11 +755,10 @@ export function AdminSettingsPage() {
 
                             <button
                               onClick={() => {
-                                if (window.confirm(`Delete inquiry from ${inq.name}?`)) {
-                                  deleteInquiry(inq.id);
-                                }
+                                deleteInquiry(inq.id);
+                                showNotification(`Inquiry from ${inq.name} deleted.`);
                               }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                               title="Delete inquiry"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -636,8 +773,17 @@ export function AdminSettingsPage() {
                           </div>
                         )}
 
-                        {/* Direct Communication Buttons */}
+                        {/* Direct Action Buttons: View, WhatsApp, Call, Email */}
                         <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100">
+                          <button
+                            onClick={() => setViewingInquiry(inq)}
+                            className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-blue-50 hover:text-[#0056b3] rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                            title="View full quote details"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-slate-500" />
+                            <span>View Details</span>
+                          </button>
+
                           {cleanPhone && (
                             <a
                               href={`https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(
@@ -650,17 +796,17 @@ export function AdminSettingsPage() {
                               className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
-                              <span>WhatsApp: {inq.phone}</span>
+                              <span>Reply on WhatsApp</span>
                             </a>
                           )}
 
-                          {inq.phone && (
+                          {inq.phone && inq.phone !== 'N/A' && (
                             <a
                               href={`tel:${inq.phone}`}
                               className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors flex items-center gap-1.5"
                             >
                               <Phone className="w-3.5 h-3.5 text-slate-500" />
-                              <span>Call</span>
+                              <span>Call {inq.phone}</span>
                             </a>
                           )}
 
@@ -772,7 +918,10 @@ export function AdminSettingsPage() {
                         {brandForm.logoUrl && (
                           <button
                             type="button"
-                            onClick={() => setBrandForm({ ...brandForm, logoUrl: '' })}
+                            onClick={() => {
+                              setBrandForm({ ...brandForm, logoUrl: '' });
+                              showNotification('Logo reset to default.');
+                            }}
                             className="text-xs text-red-600 hover:underline cursor-pointer"
                           >
                             Reset to Default Vector
@@ -784,10 +933,15 @@ export function AdminSettingsPage() {
                 </div>
 
                 {/* Front-End Homepage Hero Image & Headlines */}
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                  <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#ff5722]" />
-                    <span>Homepage Front-End Hero Banner & Headline</span>
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#ff5722]" />
+                      <span>Homepage Front-End Hero Banner & Headline</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-[#0056b3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Live on Homepage
+                    </span>
                   </div>
 
                   <div>
@@ -815,24 +969,19 @@ export function AdminSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Front-End Hero Image URL
-                    </label>
-                    <input
-                      type="text"
-                      value={brandForm.heroImageUrl}
-                      onChange={(e) => setBrandForm({ ...brandForm, heroImageUrl: e.target.value })}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                    <ImageUploadField
+                      label="Homepage Hero Banner Image (Upload from PC or Paste from Desktop)"
+                      value={brandForm.heroImageUrl || ''}
+                      onChange={(url) => setBrandForm((prev) => ({ ...prev, heroImageUrl: url }))}
+                      recommendedSize="1920 × 1080px (16:9)"
+                      aspectRatioClass="aspect-[16/9]"
+                      helperText="This image appears directly in the front-end homepage hero banner. You can upload an image from your computer (Upload from PC / Computer), drag and drop, or press Ctrl+V to paste from your desktop."
+                      presetSamples={[
+                        { name: 'Agency Studio', url: '/src/assets/images/hero_digital_agency_1792393542382.jpg' },
+                        { name: 'Engineering Workspace', url: '/src/assets/images/roadmap_code_engineering_1792395847305.jpg' },
+                        { name: 'Lead Growth Analytics', url: '/src/assets/images/blog_lead_gen_analytics_1792398293938.jpg' }
+                      ]}
                     />
-                    {brandForm.heroImageUrl && (
-                      <div className="mt-2 relative aspect-[21/9] w-full max-w-sm rounded-xl overflow-hidden border border-slate-300 bg-slate-900 shadow-xs">
-                        <img
-                          src={brandForm.heroImageUrl}
-                          alt="Hero Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -884,22 +1033,62 @@ export function AdminSettingsPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Floating WhatsApp & Chat Number *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        required
-                        value={contactForm.whatsappNumber}
-                        onChange={(e) => setContactForm({ ...contactForm, whatsappNumber: e.target.value })}
-                        placeholder="+919876543210"
-                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                      />
-                      <MessageCircle className="w-4 h-4 text-emerald-600 absolute left-3 top-3" />
+                  <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/90 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-emerald-600" />
+                        <span className="text-xs font-bold text-slate-900">WhatsApp Chat & "Chat with Us" Hotline</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-200">
+                        LIVE HOTLINE
+                      </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">Controls the floating bottom-right WhatsApp button & direct inquiry chats.</p>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Official WhatsApp Mobile Number *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          value={contactForm.whatsappNumber}
+                          onChange={(e) => setContactForm({ ...contactForm, whatsappNumber: e.target.value })}
+                          placeholder="+919876543210"
+                          className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-white border border-emerald-300 text-slate-900 focus:outline-none focus:border-emerald-600 font-mono"
+                        />
+                        <MessageCircle className="w-4 h-4 text-emerald-600 absolute left-3 top-2.5" />
+                      </div>
+                    </div>
+
+                    {/* Generated Live Chat with Us URL Preview */}
+                    <div className="p-3 bg-white rounded-xl border border-emerald-200 space-y-2">
+                      <div className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">
+                        Generated "Chat with Us" Web Link:
+                      </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <code className="text-[11px] font-mono text-emerald-800 break-all select-all">
+                          https://wa.me/{contactForm.whatsappNumber.replace(/[^0-9]/g, '')}
+                        </code>
+                        {contactForm.whatsappNumber.replace(/[^0-9]/g, '') && (
+                          <a
+                            href={`https://wa.me/${contactForm.whatsappNumber.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
+                              settings.businessName
+                            )}%2C%20I%20am%20interested%20in%20your%20services.`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors flex items-center gap-1 shrink-0 self-start sm:self-auto cursor-pointer"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Test Live Chat Link</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-slate-500 leading-normal">
+                      ℹ️ Updating this number updates the floating bottom-right <strong>"Chat with Us"</strong> button, the Homepage WhatsApp chat button, Contact page links, and direct quotation replies.
+                    </p>
                   </div>
                 </div>
 
@@ -940,7 +1129,7 @@ export function AdminSettingsPage() {
                   className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] hover:opacity-95 rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save Contact Details</span>
+                  <span>Save Contact Details & WhatsApp</span>
                 </button>
               </form>
             </div>
@@ -949,85 +1138,159 @@ export function AdminSettingsPage() {
           {/* TAB 4: SOCIAL MEDIA CHANNELS */}
           {activeTab === 'social' && (
             <div className="space-y-6">
-              <div className="pb-4 border-b border-slate-100">
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  Official Social Media Channels
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Update, add, or remove your brand links for LinkedIn, Instagram, Facebook, X (Twitter), and WhatsApp.
-                </p>
+              <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                    Official Social Media Channels
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Add, edit, remove, or customize brand profile links for Facebook, Twitter (X), WhatsApp, Instagram, LinkedIn, and YouTube.
+                  </p>
+                </div>
               </div>
 
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   updateSettings({ socialUrls: socialForm });
-                  showNotification('Social media channels updated successfully!');
+                  showNotification('Social media channels updated! Live footer icons adjusted.');
                 }}
                 className="space-y-4"
               >
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">LinkedIn Page URL</label>
-                  <input
-                    type="url"
-                    value={socialForm.linkedin}
-                    onChange={(e) => setSocialForm({ ...socialForm, linkedin: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                  />
-                </div>
+                {[
+                  {
+                    key: 'linkedin' as const,
+                    label: 'LinkedIn Company Page',
+                    defaultUrl: 'https://linkedin.com/company/happiiz-business-solutions',
+                    color: 'text-blue-600',
+                    desc: 'Corporate profile & B2B networking'
+                  },
+                  {
+                    key: 'instagram' as const,
+                    label: 'Instagram Official Profile',
+                    defaultUrl: 'https://instagram.com/happiizbusiness',
+                    color: 'text-pink-600',
+                    desc: 'Creative showcase & brand culture'
+                  },
+                  {
+                    key: 'facebook' as const,
+                    label: 'Facebook Brand Page',
+                    defaultUrl: 'https://facebook.com/happiizbusiness',
+                    color: 'text-blue-700',
+                    desc: 'Community & enterprise updates'
+                  },
+                  {
+                    key: 'twitter' as const,
+                    label: 'X (Formerly Twitter) Profile',
+                    defaultUrl: 'https://x.com/happiizbiz',
+                    color: 'text-slate-900',
+                    desc: 'Press releases & strategic announcements'
+                  },
+                  {
+                    key: 'whatsapp' as const,
+                    label: 'Direct WhatsApp Chat Channel',
+                    defaultUrl: `https://wa.me/${contactForm.whatsappNumber.replace(/[^0-9]/g, '')}`,
+                    color: 'text-emerald-600',
+                    desc: 'Direct consultation & quick inquiry chat'
+                  },
+                  {
+                    key: 'youtube' as const,
+                    label: 'YouTube Official Channel',
+                    defaultUrl: 'https://youtube.com/@happiizbusiness',
+                    color: 'text-red-600',
+                    desc: 'Case studies, product demos & webinars'
+                  }
+                ].map((item) => {
+                  const currentValue = socialForm[item.key] || '';
+                  const isConfigured = Boolean(currentValue.trim());
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Instagram Profile URL</label>
-                  <input
-                    type="url"
-                    value={socialForm.instagram}
-                    onChange={(e) => setSocialForm({ ...socialForm, instagram: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                  />
-                </div>
+                  return (
+                    <div
+                      key={item.key}
+                      className={`p-4 rounded-2xl border transition-all space-y-2.5 ${
+                        isConfigured ? 'bg-white border-slate-200 shadow-2xs' : 'bg-slate-50/70 border-dashed border-slate-300'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold text-xs ${item.color}`}>●</span>
+                          <span className="font-bold text-xs text-slate-900">{item.label}</span>
+                          {isConfigured ? (
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              Active in Footer
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                              Disabled / Removed
+                            </span>
+                          )}
+                        </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Facebook Page URL</label>
-                  <input
-                    type="url"
-                    value={socialForm.facebook}
-                    onChange={(e) => setSocialForm({ ...socialForm, facebook: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                  />
-                </div>
+                        <div className="flex items-center gap-2">
+                          {isConfigured ? (
+                            <>
+                              <a
+                                href={currentValue}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:text-[#0056b3] bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Test Link</span>
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSocialForm({ ...socialForm, [item.key]: '' });
+                                  showNotification(`${item.label} link removed.`);
+                                }}
+                                className="px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer"
+                              >
+                                Remove Link
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSocialForm({ ...socialForm, [item.key]: item.defaultUrl });
+                                showNotification(`${item.label} link restored.`);
+                              }}
+                              className="px-2.5 py-1 text-[11px] font-bold text-[#0056b3] hover:bg-blue-50 rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                            >
+                              + Add & Enable Link
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">X / Twitter Handle URL</label>
-                  <input
-                    type="url"
-                    value={socialForm.twitter}
-                    onChange={(e) => setSocialForm({ ...socialForm, twitter: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                  />
-                </div>
+                      <div className="relative">
+                        <input
+                          type="url"
+                          value={currentValue}
+                          onChange={(e) => setSocialForm({ ...socialForm, [item.key]: e.target.value })}
+                          placeholder={isConfigured ? 'https://...' : 'Link disabled (leave empty or type URL to activate)'}
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Direct WhatsApp Link</label>
-                  <input
-                    type="url"
-                    value={socialForm.whatsapp}
-                    onChange={(e) => setSocialForm({ ...socialForm, whatsapp: e.target.value })}
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
-                  />
+                <div className="pt-2 flex items-center justify-between">
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] hover:opacity-95 rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Social Media Channels</span>
+                  </button>
                 </div>
-
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] hover:opacity-95 rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Update Social Links</span>
-                </button>
               </form>
             </div>
           )}
 
-          {/* TAB 5: SERVICES & PRINTING DETAILS */}
+          {/* TAB 5: SERVICES MANAGEMENT */}
           {activeTab === 'services' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
@@ -1036,200 +1299,18 @@ export function AdminSettingsPage() {
                     Services & Deliverables Management
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Add new commercial services, edit deliverables, or remove services from the catalog.
+                    Add new commercial services, edit deliverables, view live cards, or remove services from the catalog.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setIsAddingService(true)}
-                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add New Service</span>
                 </button>
               </div>
-
-              {/* Add New Service Modal / Form */}
-              {isAddingService && (
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Add New Commercial Service</h3>
-                    <button
-                      onClick={() => setIsAddingService(false)}
-                      className="text-xs text-slate-400 hover:text-slate-700"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const formEl = e.currentTarget;
-                      const title = (formEl.elements.namedItem('title') as HTMLInputElement).value;
-                      const category = (formEl.elements.namedItem('category') as HTMLSelectElement).value;
-                      const shortDesc = (formEl.elements.namedItem('shortDesc') as HTMLTextAreaElement).value;
-                      const overview = (formEl.elements.namedItem('overview') as HTMLTextAreaElement).value;
-                      const deliverablesRaw = (formEl.elements.namedItem('deliverables') as HTMLInputElement).value;
-
-                      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-                      const newSrv: ServiceDetail = {
-                        id: slug,
-                        slug,
-                        title,
-                        categoryLabel: category === 'web-development' ? 'Web & Tech' : category === 'digital-marketing' ? 'Digital Marketing' : 'Branding & Design',
-                        category: category as any,
-                        shortDesc,
-                        overview,
-                        deliverables: deliverablesRaw.split(',').map((d) => d.trim()).filter(Boolean),
-                        processSteps: [
-                          { step: '01', title: 'Consultation & Discovery', desc: 'Requirements analysis and roadmap planning.' },
-                          { step: '02', title: 'Creative Engineering', desc: 'Design systems and clean production.' }
-                        ],
-                        faqs: [
-                          { q: `What is included in ${title}?`, a: 'Full deliverables transfer, dedicated WhatsApp support, and quality assurance.' }
-                        ]
-                      };
-
-                      addService(newSrv);
-                      setIsAddingService(false);
-                      showNotification(`Service "${title}" added successfully!`);
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Service Title *</label>
-                        <input
-                          name="title"
-                          required
-                          placeholder="e.g. Mobile Application Engineering"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Category *</label>
-                        <select
-                          name="category"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none"
-                        >
-                          <option value="web-development">Web & Tech</option>
-                          <option value="digital-marketing">Digital Marketing & SEO</option>
-                          <option value="graphic-design">Branding, Stationery & Printing</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Short Summary (Marquee / Card)</label>
-                      <textarea
-                        name="shortDesc"
-                        rows={2}
-                        required
-                        placeholder="Brief 1-2 sentence overview shown in grid cards..."
-                        className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none resize-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Full Package Overview (Modal Details)</label>
-                      <textarea
-                        name="overview"
-                        rows={2}
-                        required
-                        placeholder="Detailed commercial scope and benefits..."
-                        className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none resize-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Deliverables (comma separated)</label>
-                      <input
-                        name="deliverables"
-                        placeholder="e.g. Cross-Platform App, Push Notifications, Cloud API, 90-Day SLA"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="px-5 py-2 text-xs font-bold text-white bg-[#0056b3] hover:bg-[#004ea8] rounded-xl cursor-pointer"
-                    >
-                      Save Service
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* Editing Service Form */}
-              {editingService && (
-                <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-4 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">
-                      Edit Service: <span className="text-[#0056b3]">{editingService.title}</span>
-                    </h3>
-                    <button
-                      onClick={() => setEditingService(null)}
-                      className="text-xs text-slate-400 hover:text-slate-700"
-                    >
-                      Close
-                    </button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      updateService(editingService.id, editingService);
-                      setEditingService(null);
-                      showNotification(`Service updated successfully!`);
-                    }}
-                    className="space-y-3"
-                  >
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
-                      <input
-                        type="text"
-                        value={editingService.title}
-                        onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Short Description</label>
-                      <textarea
-                        rows={2}
-                        value={editingService.shortDesc}
-                        onChange={(e) => setEditingService({ ...editingService, shortDesc: e.target.value })}
-                        className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none resize-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Deliverables (comma separated)</label>
-                      <input
-                        type="text"
-                        value={editingService.deliverables.join(', ')}
-                        onChange={(e) =>
-                          setEditingService({
-                            ...editingService,
-                            deliverables: e.target.value.split(',').map((d) => d.trim()).filter(Boolean)
-                          })
-                        }
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl cursor-pointer"
-                    >
-                      Apply Changes Site-Wide
-                    </button>
-                  </form>
-                </div>
-              )}
 
               {/* List of Services */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1238,27 +1319,38 @@ export function AdminSettingsPage() {
                     key={srv.id}
                     className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs flex flex-col justify-between space-y-3"
                   >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-[10px] font-bold text-[#0056b3] uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                           {srv.categoryLabel}
                         </span>
+
+                        {/* View, Edit, Delete Actions */}
                         <div className="flex items-center gap-1.5">
                           <button
+                            onClick={() => openServiceDetailModal(srv.slug)}
+                            className="px-2 py-1 rounded-lg text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                            title="View Live Service Modal"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>View</span>
+                          </button>
+
+                          <button
                             onClick={() => setEditingService(srv)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-[#0056b3] hover:bg-blue-50 transition-colors"
+                            className="px-2 py-1 rounded-lg text-slate-500 hover:text-[#0056b3] hover:bg-blue-50 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
                             title="Edit Service"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
                           </button>
+
                           <button
                             onClick={() => {
-                              if (window.confirm(`Delete service "${srv.title}"?`)) {
-                                deleteService(srv.id);
-                                showNotification(`Service "${srv.title}" deleted.`);
-                              }
+                              deleteService(srv.id);
+                              showNotification(`Service "${srv.title}" deleted.`);
                             }}
-                            className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                             title="Delete Service"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1266,14 +1358,30 @@ export function AdminSettingsPage() {
                         </div>
                       </div>
 
-                      <h4 className="text-sm font-bold text-slate-900">{srv.title}</h4>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                        {srv.shortDesc}
-                      </p>
+                      <div className="flex items-start gap-3">
+                        {srv.imageUrl ? (
+                          <img
+                            src={srv.imageUrl}
+                            alt={srv.title}
+                            className="w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-blue-50 border border-blue-200 text-[#0056b3] flex items-center justify-center shrink-0">
+                            <Layers className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <h4 className="text-sm font-bold text-slate-900 truncate">{srv.title}</h4>
+                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                            {srv.shortDesc}
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="text-[10px] text-slate-400 font-mono">
-                      {srv.deliverables.length} Deliverables verified
+                    <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-100">
+                      <span>{srv.deliverables.length} Deliverables verified</span>
+                      {srv.imageUrl && <span className="text-emerald-600 font-bold">● Custom Image</span>}
                     </div>
                   </div>
                 ))}
@@ -1290,202 +1398,81 @@ export function AdminSettingsPage() {
                     Portfolio & Commercial Impact Metrics
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Edit existing showcase samples, demonstrated SEO impact metrics, or add new projects.
+                    Add new projects, edit demonstrated SEO impact metrics, view live case studies, or delete items.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setIsAddingProject(true)}
-                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Project</span>
                 </button>
               </div>
 
-              {/* Add Project Form */}
-              {isAddingProject && (
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Add New Portfolio Case Study</h3>
-                    <button onClick={() => setIsAddingProject(false)} className="text-xs text-slate-400">Cancel</button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const formEl = e.currentTarget;
-                      const title = (formEl.elements.namedItem('p_title') as HTMLInputElement).value;
-                      const client = (formEl.elements.namedItem('p_client') as HTMLInputElement).value;
-                      const category = (formEl.elements.namedItem('p_category') as HTMLSelectElement).value;
-                      const impact = (formEl.elements.namedItem('p_impact') as HTMLInputElement).value;
-                      const summary = (formEl.elements.namedItem('p_summary') as HTMLTextAreaElement).value;
-                      const image = (formEl.elements.namedItem('p_image') as HTMLInputElement).value;
-
-                      const id = `proj-${Date.now()}`;
-                      const newProj: PortfolioProject = {
-                        id,
-                        title,
-                        client,
-                        category,
-                        image: image || '/src/assets/images/portfolio_web_design_1792393542453.jpg',
-                        impact,
-                        summary,
-                        year: '2026',
-                        tags: ['Commercial Showcase'],
-                        deliverables: ['Custom Implementation', 'Technical Verification']
-                      };
-
-                      addProject(newProj);
-                      setIsAddingProject(false);
-                      showNotification(`Project "${title}" added!`);
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Project Title *</label>
-                        <input name="p_title" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Client / Org *</label>
-                        <input name="p_client" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Category *</label>
-                        <select name="p_category" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300">
-                          <option value="Web Development">Web Development</option>
-                          <option value="Branding & Design">Branding & Design</option>
-                          <option value="Digital Marketing">Digital Marketing</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Demonstrated Commercial Impact (SEO / Growth Metric) *</label>
-                      <input
-                        name="p_impact"
-                        required
-                        placeholder="e.g. +240% Organic Traffic Growth · Page 1 Google Rank · ₹2.4Cr Pipeline"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Project Summary</label>
-                      <textarea name="p_summary" rows={2} required className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Image URL</label>
-                      <input name="p_image" placeholder="/src/assets/images/portfolio_web_design_1792393542453.jpg" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                    </div>
-
-                    <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-[#0056b3] rounded-xl cursor-pointer">
-                      Save Project
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* Editing Project Form */}
-              {editingProject && (
-                <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Edit Project: {editingProject.title}</h3>
-                    <button onClick={() => setEditingProject(null)} className="text-xs text-slate-400">Close</button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      updateProject(editingProject.id, editingProject);
-                      setEditingProject(null);
-                      showNotification('Project updated site-wide!');
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
-                        <input
-                          value={editingProject.title}
-                          onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Client</label>
-                        <input
-                          value={editingProject.client}
-                          onChange={(e) => setEditingProject({ ...editingProject, client: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Impact Metric</label>
-                      <input
-                        value={editingProject.impact}
-                        onChange={(e) => setEditingProject({ ...editingProject, impact: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Summary</label>
-                      <textarea
-                        rows={2}
-                        value={editingProject.summary}
-                        onChange={(e) => setEditingProject({ ...editingProject, summary: e.target.value })}
-                        className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-slate-300 resize-none"
-                      />
-                    </div>
-
-                    <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 rounded-xl cursor-pointer">
-                      Save Changes
-                    </button>
-                  </form>
-                </div>
-              )}
-
               {/* Projects Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {portfolio.map((proj) => (
-                  <div key={proj.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs flex flex-col justify-between space-y-3">
+                  <div
+                    key={proj.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-3 flex flex-col justify-between"
+                  >
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-[#0056b3] bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                           {proj.category}
                         </span>
+
                         <div className="flex items-center gap-1.5">
                           <button
+                            onClick={() => openPortfolioModal(proj.id)}
+                            className="px-2 py-1 rounded-lg text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                            title="View Live Case Study Modal"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>View</span>
+                          </button>
+
+                          <button
                             onClick={() => setEditingProject(proj)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-[#0056b3] hover:bg-blue-50"
+                            className="px-2 py-1 rounded-lg text-slate-500 hover:text-[#0056b3] hover:bg-blue-50 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                            title="Edit Project"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
                           </button>
+
                           <button
                             onClick={() => {
-                              if (window.confirm(`Delete project "${proj.title}"?`)) {
-                                deleteProject(proj.id);
-                                showNotification(`Project deleted.`);
-                              }
+                              deleteProject(proj.id);
+                              showNotification(`Project "${proj.title}" deleted.`);
                             }}
-                            className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                            title="Delete Project"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
-                      <h4 className="text-sm font-bold text-slate-900">{proj.title}</h4>
-                      <p className="text-xs text-slate-500 line-clamp-2">{proj.summary}</p>
+                      <div className="flex items-start gap-3">
+                        {proj.image && (
+                          <img
+                            src={proj.image}
+                            alt={proj.title}
+                            className="w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0 shadow-2xs"
+                          />
+                        )}
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <h4 className="text-sm font-bold text-slate-900 truncate">{proj.title}</h4>
+                          <p className="text-xs text-slate-500 line-clamp-2">{proj.summary}</p>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800 truncate">
-                      ⚡ {proj.impact}
+                    <div className="p-2 bg-slate-50 rounded-xl text-[11px] font-medium text-slate-700 border border-slate-100">
+                      ⚡ Impact: <span className="font-bold text-[#ff5722]">{proj.impact}</span>
                     </div>
                   </div>
                 ))}
@@ -1493,154 +1480,34 @@ export function AdminSettingsPage() {
             </div>
           )}
 
-          {/* TAB 7: CLIENT FEEDBACKS & TESTIMONIALS */}
+          {/* TAB 7: CLIENT FEEDBACKS */}
           {activeTab === 'testimonials' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                    Client Feedbacks & Reviews
+                    Verified Commercial Feedbacks
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Manage testimonials shown in the homepage feedback marquee.
+                    Add, edit, or delete customer testimonials displayed in the live testimonial slider.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setIsAddingTestimonial(true)}
-                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-xs transition-all cursor-pointer flex items-center gap-1.5 hover:opacity-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add Feedback</span>
+                  <span>Add Review</span>
                 </button>
               </div>
-
-              {/* Add Feedback Form */}
-              {isAddingTestimonial && (
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Add New Client Feedback</h3>
-                    <button onClick={() => setIsAddingTestimonial(false)} className="text-xs text-slate-400">Cancel</button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const formEl = e.currentTarget;
-                      const author = (formEl.elements.namedItem('t_author') as HTMLInputElement).value;
-                      const role = (formEl.elements.namedItem('t_role') as HTMLInputElement).value;
-                      const org = (formEl.elements.namedItem('t_org') as HTMLInputElement).value;
-                      const quote = (formEl.elements.namedItem('t_quote') as HTMLTextAreaElement).value;
-
-                      const newItem: TestimonialItem = {
-                        id: `t-${Date.now()}`,
-                        author,
-                        role,
-                        org,
-                        quote,
-                        rating: 5
-                      };
-
-                      addTestimonial(newItem);
-                      setIsAddingTestimonial(false);
-                      showNotification(`Feedback from ${author} added!`);
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Client Name *</label>
-                        <input name="t_author" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Role / Designation *</label>
-                        <input name="t_role" required placeholder="e.g. Founder & CEO" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Company / Organization *</label>
-                        <input name="t_org" required placeholder="e.g. Apex Industrial" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Feedback Quote *</label>
-                      <textarea name="t_quote" rows={3} required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
-                    </div>
-
-                    <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-[#0056b3] rounded-xl cursor-pointer">
-                      Save Feedback
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              {/* Editing Feedback Form */}
-              {editingTestimonial && (
-                <div className="p-5 rounded-2xl bg-blue-50/60 border border-blue-200 space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900">Edit Feedback from {editingTestimonial.author}</h3>
-                    <button onClick={() => setEditingTestimonial(null)} className="text-xs text-slate-400">Close</button>
-                  </div>
-
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      updateTestimonial(editingTestimonial.id, editingTestimonial);
-                      setEditingTestimonial(null);
-                      showNotification('Feedback updated site-wide!');
-                    }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Author</label>
-                        <input
-                          value={editingTestimonial.author}
-                          onChange={(e) => setEditingTestimonial({ ...editingTestimonial, author: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Role</label>
-                        <input
-                          value={editingTestimonial.role}
-                          onChange={(e) => setEditingTestimonial({ ...editingTestimonial, role: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">Org</label>
-                        <input
-                          value={editingTestimonial.org}
-                          onChange={(e) => setEditingTestimonial({ ...editingTestimonial, org: e.target.value })}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Feedback Quote</label>
-                      <textarea
-                        rows={3}
-                        value={editingTestimonial.quote}
-                        onChange={(e) => setEditingTestimonial({ ...editingTestimonial, quote: e.target.value })}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none"
-                      />
-                    </div>
-
-                    <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 rounded-xl cursor-pointer">
-                      Save Changes
-                    </button>
-                  </form>
-                </div>
-              )}
 
               {/* Feedbacks Grid */}
               <div className="space-y-3">
                 {testimonials.map((t) => (
                   <div key={t.id} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <div className="flex text-amber-400">
                           {[...Array(t.rating || 5)].map((_, i) => (
                             <Star key={i} className="w-3.5 h-3.5 fill-current" />
@@ -1654,18 +1521,19 @@ export function AdminSettingsPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => setEditingTestimonial(t)}
-                          className="p-1 rounded-lg text-slate-400 hover:text-[#0056b3]"
+                          className="px-2 py-1 rounded-lg text-slate-500 hover:text-[#0056b3] hover:bg-blue-50 transition-colors flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
+                          title="Edit Review"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm(`Delete review from ${t.author}?`)) {
-                              deleteTestimonial(t.id);
-                              showNotification(`Review deleted.`);
-                            }
+                            deleteTestimonial(t.id);
+                            showNotification(`Review from ${t.author} deleted.`);
                           }}
-                          className="p-1 rounded-lg text-slate-400 hover:text-red-600"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                          title="Delete Review"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -1682,13 +1550,24 @@ export function AdminSettingsPage() {
           {/* TAB 8: ABOUT US CONTENT */}
           {activeTab === 'about' && (
             <div className="space-y-6">
-              <div className="pb-4 border-b border-slate-100">
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  About Us & Agency Mission Customization
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Update your enterprise mission, vision, and core capabilities displayed in the About Us popup and page.
-                </p>
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                    About Us & Agency Mission Customization
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Update your enterprise mission, vision, and core capabilities displayed in the About Us popup and page.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => openAboutModal()}
+                  className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="View Live About Us Modal"
+                >
+                  <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>View Live About Modal</span>
+                </button>
               </div>
 
               <form
@@ -1748,23 +1627,32 @@ export function AdminSettingsPage() {
                 </p>
               </div>
 
+              {profileError && (
+                <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{profileError}</span>
+                </div>
+              )}
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
+                  setProfileError(null);
+
                   if (profileForm.newPassword) {
                     if (profileForm.newPassword !== profileForm.confirmPassword) {
-                      alert('New password and confirm password do not match.');
+                      setProfileError('New password and confirm password do not match.');
                       return;
                     }
                     if (profileForm.newPassword.length < 4) {
-                      alert('Password must be at least 4 characters.');
+                      setProfileError('Password must be at least 4 characters.');
                       return;
                     }
                   }
 
                   updateAdminProfile(profileForm.name, profileForm.email, profileForm.newPassword || undefined);
                   setProfileForm((prev) => ({ ...prev, newPassword: '', confirmPassword: '' }));
-                  showNotification('Admin credentials updated! Remember your new credentials for next login.');
+                  showNotification('Admin credentials updated! Your new login details are active.');
                 }}
                 className="space-y-4 max-w-lg"
               >
@@ -1838,6 +1726,765 @@ export function AdminSettingsPage() {
           )}
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* INTERACTIVE POPUP MODALS FOR VIEWING / EDITING / ADDING */}
+      {/* ========================================================================= */}
+
+      {/* 1. VIEW INQUIRY DETAILS MODAL */}
+      {viewingInquiry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#0056b3] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                  {viewingInquiry.service}
+                </span>
+                <span className="text-xs text-slate-400 font-mono">
+                  {new Date(viewingInquiry.timestamp || Date.now()).toLocaleString()}
+                </span>
+              </div>
+              <button
+                onClick={() => setViewingInquiry(null)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <div className="text-[10px] font-bold uppercase text-slate-400 font-mono">Client Name</div>
+                <div className="text-lg font-black text-slate-900">{viewingInquiry.name}</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">Phone / WhatsApp</div>
+                  <div className="font-bold text-slate-900 mt-0.5">{viewingInquiry.phone}</div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">Email Address</div>
+                  <div className="font-bold text-slate-900 mt-0.5 truncate">{viewingInquiry.email}</div>
+                </div>
+              </div>
+
+              {viewingInquiry.budget && (
+                <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs">
+                  <span className="font-bold text-emerald-800">Budget Range: </span>
+                  <span className="font-mono text-emerald-900 font-bold">{viewingInquiry.budget}</span>
+                </div>
+              )}
+
+              <div>
+                <div className="text-[10px] font-bold uppercase text-slate-400 font-mono mb-1">Client Scope & Message</div>
+                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-800 leading-relaxed font-sans">
+                  "{viewingInquiry.message || 'No additional message provided.'}"
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold uppercase text-slate-400 font-mono mb-1">Status</div>
+                <select
+                  value={viewingInquiry.status || 'new'}
+                  onChange={(e) => {
+                    const nextSt = e.target.value as any;
+                    updateInquiryStatus(viewingInquiry.id, nextSt);
+                    setViewingInquiry({ ...viewingInquiry, status: nextSt });
+                    showNotification(`Inquiry status updated to ${nextSt}.`);
+                  }}
+                  className="w-full text-xs font-bold rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800 focus:outline-none"
+                >
+                  <option value="new">🟡 New Request</option>
+                  <option value="contacted">🔵 Contacted Client</option>
+                  <option value="quoted">🟣 Quotation Sent</option>
+                  <option value="closed">🟢 Project Closed / Won</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex flex-wrap items-center gap-2">
+                {viewingInquiry.phone && viewingInquiry.phone !== 'N/A' && (
+                  <a
+                    href={`https://wa.me/${viewingInquiry.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
+                      viewingInquiry.name
+                    )}%2C%20thank%20you%20for%20contacting%20${encodeURIComponent(settings.businessName)}.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl flex items-center justify-center gap-1.5 shadow-sm"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Chat on WhatsApp</span>
+                  </a>
+                )}
+
+                <button
+                  onClick={() => {
+                    deleteInquiry(viewingInquiry.id);
+                    setViewingInquiry(null);
+                    showNotification('Inquiry deleted.');
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  Delete Inquiry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. ADD NEW SERVICE MODAL */}
+      {isAddingService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Add New Commercial Service</h3>
+              <button onClick={() => setIsAddingService(false)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formEl = e.currentTarget;
+                const title = (formEl.elements.namedItem('title') as HTMLInputElement).value;
+                const category = (formEl.elements.namedItem('category') as HTMLSelectElement).value;
+                const shortDesc = (formEl.elements.namedItem('shortDesc') as HTMLTextAreaElement).value;
+                const overview = (formEl.elements.namedItem('overview') as HTMLTextAreaElement).value;
+                const deliverablesRaw = (formEl.elements.namedItem('deliverables') as HTMLInputElement).value;
+
+                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+                const newSrv: ServiceDetail = {
+                  id: slug,
+                  slug,
+                  title,
+                  categoryLabel: category === 'web-development' ? 'Web & Tech' : category === 'digital-marketing' ? 'Digital Marketing' : 'Branding & Design',
+                  category: category as any,
+                  shortDesc,
+                  overview,
+                  imageUrl: newServiceImage.trim() || undefined,
+                  deliverables: deliverablesRaw.split(',').map((d) => d.trim()).filter(Boolean),
+                  processSteps: [
+                    { step: '01', title: 'Consultation & Discovery', desc: 'Requirements analysis and roadmap planning.' },
+                    { step: '02', title: 'Creative Engineering', desc: 'Design systems and clean production.' }
+                  ],
+                  faqs: [
+                    { q: `What is included in ${title}?`, a: 'Full deliverables transfer, dedicated WhatsApp support, and quality assurance.' }
+                  ]
+                };
+
+                addService(newSrv);
+                setIsAddingService(false);
+                setNewServiceImage('');
+                showNotification(`Service "${title}" added successfully!`);
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Service Title *</label>
+                  <input name="title" required placeholder="e.g. Next.js SaaS Web Applications" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Category *</label>
+                  <select name="category" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300">
+                    <option value="web-development">Web & Engineering</option>
+                    <option value="digital-marketing">Digital Marketing & Ads</option>
+                    <option value="graphic-design">Branding & Stationery</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Service Feature Image Uploader with PC File Picker & Desktop Paste */}
+              <ImageUploadField
+                label="Service Cover / Feature Image (Upload from PC or Paste from Desktop)"
+                value={newServiceImage}
+                onChange={setNewServiceImage}
+                recommendedSize="1200 × 800px (16:9)"
+                aspectRatioClass="aspect-[16/9]"
+                helperText="Upload image from computer, drag & drop, or press Ctrl+V to paste screenshot from clipboard. Displays in service cards and detailed service modal."
+                presetSamples={[
+                  { name: 'Web Engineering', url: '/src/assets/images/portfolio_web_design_1792393542453.jpg' },
+                  { name: 'Digital Growth', url: '/src/assets/images/portfolio_digital_campaign_1792393543250.jpg' },
+                  { name: 'Brand & Stationery', url: '/src/assets/images/portfolio_branding_identity_1792393543752.jpg' }
+                ]}
+              />
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Short Description *</label>
+                <textarea name="shortDesc" rows={2} required placeholder="Brief summary displayed on cards..." className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Full Detailed Overview *</label>
+                <textarea name="overview" rows={3} required placeholder="Detailed methodology and approach..." className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Deliverables (comma separated) *</label>
+                <input name="deliverables" required placeholder="Custom UI/UX, Speed Audit, Technical SEO, Full Ownership" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddingService(false)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-md cursor-pointer">
+                  Create Service
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 3. EDIT SERVICE MODAL */}
+      {editingService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] font-bold text-[#0056b3] uppercase tracking-wider">Editing Service</span>
+                <h3 className="text-base font-black text-slate-900">{editingService.title}</h3>
+              </div>
+              <button onClick={() => setEditingService(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateService(editingService.id, editingService);
+                setEditingService(null);
+                showNotification(`Service "${editingService.title}" updated successfully!`);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={editingService.title}
+                  onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900"
+                />
+              </div>
+
+              {/* Service Feature Image Uploader with PC File Picker & Desktop Paste */}
+              <ImageUploadField
+                label="Service Cover / Feature Image (Upload from PC or Paste from Desktop)"
+                value={editingService.imageUrl || ''}
+                onChange={(url) => setEditingService({ ...editingService, imageUrl: url })}
+                recommendedSize="1200 × 800px (16:9)"
+                aspectRatioClass="aspect-[16/9]"
+                helperText="Upload image from computer, drag & drop, or press Ctrl+V to paste screenshot from clipboard. Displays in service cards and detailed service modal."
+                presetSamples={[
+                  { name: 'Web Engineering', url: '/src/assets/images/portfolio_web_design_1792393542453.jpg' },
+                  { name: 'Digital Growth', url: '/src/assets/images/portfolio_digital_campaign_1792393543250.jpg' },
+                  { name: 'Brand & Stationery', url: '/src/assets/images/portfolio_branding_identity_1792393543752.jpg' }
+                ]}
+              />
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Short Description</label>
+                <textarea
+                  rows={2}
+                  value={editingService.shortDesc}
+                  onChange={(e) => setEditingService({ ...editingService, shortDesc: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Overview Description</label>
+                <textarea
+                  rows={3}
+                  value={editingService.overview}
+                  onChange={(e) => setEditingService({ ...editingService, overview: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Deliverables (comma separated)</label>
+                <input
+                  type="text"
+                  value={editingService.deliverables.join(', ')}
+                  onChange={(e) =>
+                    setEditingService({
+                      ...editingService,
+                      deliverables: e.target.value.split(',').map((d) => d.trim()).filter(Boolean)
+                    })
+                  }
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setEditingService(null)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md cursor-pointer">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. ADD NEW PROJECT MODAL */}
+      {isAddingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Add New Case Study Project</h3>
+              <button onClick={() => setIsAddingProject(false)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formEl = e.currentTarget;
+                const title = (formEl.elements.namedItem('p_title') as HTMLInputElement).value;
+                const client = (formEl.elements.namedItem('p_client') as HTMLInputElement).value;
+                const category = (formEl.elements.namedItem('p_category') as HTMLSelectElement).value;
+                const impact = (formEl.elements.namedItem('p_impact') as HTMLInputElement).value;
+                const summary = (formEl.elements.namedItem('p_summary') as HTMLTextAreaElement).value;
+                const image = (formEl.elements.namedItem('p_image') as HTMLInputElement).value;
+
+                const newProj: PortfolioProject = {
+                  id: `proj-${Date.now()}`,
+                  title,
+                  client,
+                  category,
+                  image: newProjectImage.trim() || '/src/assets/images/portfolio_web_design_1792393542453.jpg',
+                  impact,
+                  summary,
+                  year: '2026',
+                  tags: ['Commercial Showcase'],
+                  deliverables: ['Custom Implementation', 'Technical Verification']
+                };
+
+                addProject(newProj);
+                setIsAddingProject(false);
+                setNewProjectImage('/src/assets/images/portfolio_web_design_1792393542453.jpg');
+                showNotification(`Project "${title}" added!`);
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Project Title *</label>
+                  <input name="p_title" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Client / Org *</label>
+                  <input name="p_client" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Category *</label>
+                <select name="p_category" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300">
+                  <option value="Web Development">Web Development</option>
+                  <option value="Branding & Design">Branding & Design</option>
+                  <option value="Digital Marketing">Digital Marketing</option>
+                  <option value="Stationery">Stationery & Print</option>
+                </select>
+              </div>
+
+              {/* Project Showcase Image Uploader with PC File Picker & Desktop Paste */}
+              <ImageUploadField
+                label="Project Showcase Image (Upload from PC or Paste from Desktop)"
+                value={newProjectImage}
+                onChange={setNewProjectImage}
+                recommendedSize="1200 × 800px (4:3 or 16:9)"
+                aspectRatioClass="aspect-[4/3]"
+                helperText="Upload case study screenshot from your PC / computer or press Ctrl+V to paste directly from your clipboard."
+                presetSamples={[
+                  { name: 'Web Showcase', url: '/src/assets/images/portfolio_web_design_1792393542453.jpg' },
+                  { name: 'Campaign Showcase', url: '/src/assets/images/portfolio_digital_campaign_1792393543250.jpg' },
+                  { name: 'Branding Showcase', url: '/src/assets/images/portfolio_branding_identity_1792393543752.jpg' }
+                ]}
+              />
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Impact Metric *</label>
+                <input name="p_impact" required placeholder="+240% Organic Traffic · Page 1 Google Rank" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Summary *</label>
+                <textarea name="p_summary" rows={2} required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddingProject(false)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-md cursor-pointer">
+                  Save Project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 5. EDIT PROJECT MODAL */}
+      {editingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-xl bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Edit Project: {editingProject.title}</h3>
+              <button onClick={() => setEditingProject(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateProject(editingProject.id, editingProject);
+                setEditingProject(null);
+                showNotification(`Project "${editingProject.title}" updated.`);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Title</label>
+                <input
+                  value={editingProject.title}
+                  onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Client</label>
+                <input
+                  value={editingProject.client}
+                  onChange={(e) => setEditingProject({ ...editingProject, client: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                />
+              </div>
+
+              {/* Project Showcase Image Uploader with PC File Picker & Desktop Paste */}
+              <ImageUploadField
+                label="Project Showcase Image (Upload from PC or Paste from Desktop)"
+                value={editingProject.image || ''}
+                onChange={(url) => setEditingProject({ ...editingProject, image: url })}
+                recommendedSize="1200 × 800px (4:3 or 16:9)"
+                aspectRatioClass="aspect-[4/3]"
+                helperText="Upload case study screenshot from your PC / computer or press Ctrl+V to paste directly from your clipboard."
+                presetSamples={[
+                  { name: 'Web Showcase', url: '/src/assets/images/portfolio_web_design_1792393542453.jpg' },
+                  { name: 'Campaign Showcase', url: '/src/assets/images/portfolio_digital_campaign_1792393543250.jpg' },
+                  { name: 'Branding Showcase', url: '/src/assets/images/portfolio_branding_identity_1792393543752.jpg' }
+                ]}
+              />
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Impact Metric</label>
+                <input
+                  value={editingProject.impact}
+                  onChange={(e) => setEditingProject({ ...editingProject, impact: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Summary</label>
+                <textarea
+                  rows={2}
+                  value={editingProject.summary}
+                  onChange={(e) => setEditingProject({ ...editingProject, summary: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setEditingProject(null)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md cursor-pointer">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. ADD TESTIMONIAL MODAL */}
+      {isAddingTestimonial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Add Client Review</h3>
+              <button onClick={() => setIsAddingTestimonial(false)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formEl = e.currentTarget;
+                const author = (formEl.elements.namedItem('t_author') as HTMLInputElement).value;
+                const role = (formEl.elements.namedItem('t_role') as HTMLInputElement).value;
+                const org = (formEl.elements.namedItem('t_org') as HTMLInputElement).value;
+                const quote = (formEl.elements.namedItem('t_quote') as HTMLTextAreaElement).value;
+
+                addTestimonial({
+                  id: `t-${Date.now()}`,
+                  author,
+                  role,
+                  org,
+                  quote,
+                  rating: 5
+                });
+                setIsAddingTestimonial(false);
+                showNotification(`Review from ${author} added!`);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Author Name *</label>
+                <input name="t_author" required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Role *</label>
+                  <input name="t_role" required placeholder="e.g. Managing Director" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Organization *</label>
+                  <input name="t_org" required placeholder="e.g. Acme Corp" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Feedback Quote *</label>
+                <textarea name="t_quote" rows={3} required className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none" />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddingTestimonial(false)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] rounded-xl shadow-md cursor-pointer">
+                  Add Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 7. EDIT TESTIMONIAL MODAL */}
+      {editingTestimonial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Edit Review from {editingTestimonial.author}</h3>
+              <button onClick={() => setEditingTestimonial(null)} className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateTestimonial(editingTestimonial.id, editingTestimonial);
+                setEditingTestimonial(null);
+                showNotification(`Review updated successfully!`);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Author</label>
+                <input
+                  value={editingTestimonial.author}
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, author: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Role</label>
+                  <input
+                    value={editingTestimonial.role}
+                    onChange={(e) => setEditingTestimonial({ ...editingTestimonial, role: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Org</label>
+                  <input
+                    value={editingTestimonial.org}
+                    onChange={(e) => setEditingTestimonial({ ...editingTestimonial, org: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Feedback Quote</label>
+                <textarea
+                  rows={3}
+                  value={editingTestimonial.quote}
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, quote: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-slate-300 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onClick={() => setEditingTestimonial(null)} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md cursor-pointer">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 8. ADMIN PROFILE & SECURITY SETTINGS MODAL */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-blue-50 text-[#0056b3]">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Admin Profile & Security</h3>
+                  <p className="text-[11px] text-slate-500">Update Administrator Name, Email & Password</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsProfileModalOpen(false);
+                  setProfileError(null);
+                }}
+                className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-xl cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {profileError && (
+              <div className="p-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{profileError}</span>
+              </div>
+            )}
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setProfileError(null);
+
+                if (profileForm.newPassword) {
+                  if (profileForm.newPassword !== profileForm.confirmPassword) {
+                    setProfileError('New password and confirm password do not match.');
+                    return;
+                  }
+                  if (profileForm.newPassword.length < 4) {
+                    setProfileError('Password must be at least 4 characters.');
+                    return;
+                  }
+                }
+
+                updateAdminProfile(profileForm.name, profileForm.email, profileForm.newPassword || undefined);
+                setProfileForm((prev) => ({ ...prev, newPassword: '', confirmPassword: '' }));
+                setIsProfileModalOpen(false);
+                showNotification('Admin Profile updated successfully! Your new credentials are active.');
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Admin Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">Admin Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={profileForm.email}
+                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                  className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                />
+              </div>
+
+              <div className="pt-2 border-t border-slate-100">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                  Change Password (Leave blank to keep current)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">New Password</label>
+                    <input
+                      type="password"
+                      value={profileForm.newPassword}
+                      onChange={(e) => setProfileForm({ ...profileForm, newPassword: e.target.value })}
+                      placeholder="Min 4 characters"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Confirm Password</label>
+                    <input
+                      type="password"
+                      value={profileForm.confirmPassword}
+                      onChange={(e) => setProfileForm({ ...profileForm, confirmPassword: e.target.value })}
+                      placeholder="Repeat new password"
+                      className="w-full px-3.5 py-2 text-xs rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:border-[#0056b3]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileModalOpen(false);
+                    setProfileError(null);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl cursor-pointer hover:bg-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-[#0056b3] to-[#ff5722] hover:opacity-95 rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>Save Profile</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

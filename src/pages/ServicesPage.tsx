@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { SERVICES_DATA } from '../data/servicesData';
 import {
@@ -17,10 +18,13 @@ import {
 } from 'lucide-react';
 
 export function ServicesPage() {
+  const { services } = useBusiness();
   const { navigate, openQuoteModal } = useNavigation();
   const [filter, setFilter] = useState<'all' | 'web' | 'marketing' | 'design'>('all');
 
-  const filteredServices = SERVICES_DATA.filter((s) => {
+  const allServices = services && services.length > 0 ? services : SERVICES_DATA;
+
+  const filteredServices = allServices.filter((s) => {
     if (filter === 'all') return true;
     if (filter === 'web') return s.category === 'web-development';
     if (filter === 'marketing') return s.category === 'digital-marketing';
@@ -97,17 +101,30 @@ export function ServicesPage() {
         {filteredServices.map((srv, idx) => (
           <div
             key={srv.id}
-            className="group p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+            className="group rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
           >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                  {getServiceIcon(srv.slug)}
+            {srv.imageUrl && (
+              <div className="relative aspect-[16/9] w-full bg-slate-100 overflow-hidden">
+                <img
+                  src={srv.imageUrl}
+                  alt={srv.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-[10px] font-semibold text-slate-800 shadow-sm">
+                  {srv.categoryLabel}
                 </div>
-                <span className="text-xs font-mono font-medium text-slate-400">
-                  0{idx + 1}
-                </span>
               </div>
+            )}
+            <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                    {getServiceIcon(srv.slug)}
+                  </div>
+                  <span className="text-xs font-mono font-medium text-slate-400">
+                    0{idx + 1}
+                  </span>
+                </div>
 
               <div>
                 <span className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
@@ -151,6 +168,7 @@ export function ServicesPage() {
               </button>
             </div>
           </div>
+        </div>
         ))}
       </div>
 

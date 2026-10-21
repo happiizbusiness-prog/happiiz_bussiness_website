@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export function ContactPage() {
-  const { settings } = useBusiness();
+  const { settings, addInquiry } = useBusiness();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -52,19 +52,23 @@ export function ContactPage() {
     setStatus('submitting');
 
     try {
-      // Simulate real asynchronous submission / preparing for Firebase
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       const newId = `HPS-${Math.floor(100000 + Math.random() * 900000)}`;
       setInquiryId(newId);
 
-      const saved = JSON.parse(localStorage.getItem('happiiz_inquiries') || '[]');
-      saved.push({
+      addInquiry({
         id: newId,
-        ...formData,
-        timestamp: new Date().toISOString()
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: formData.service || 'Strategic Inquiry',
+        budget: formData.budget || 'Custom',
+        message: formData.description,
+        timestamp: new Date().toISOString(),
+        status: 'new',
+        notes: ''
       });
-      localStorage.setItem('happiiz_inquiries', JSON.stringify(saved));
 
       setStatus('success');
     } catch {

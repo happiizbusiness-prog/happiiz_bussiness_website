@@ -183,8 +183,18 @@ export function ServicesModal() {
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-100 shadow-2xs group-hover:scale-110 transition-transform">
-                      {getServiceIcon(srv.slug)}
+                    <div className="flex items-center gap-2.5">
+                      {srv.imageUrl ? (
+                        <img
+                          src={srv.imageUrl}
+                          alt={srv.title}
+                          className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-2xs group-hover:scale-105 transition-transform shrink-0"
+                        />
+                      ) : (
+                        <div className="p-2.5 rounded-xl bg-blue-50/80 border border-blue-100 shadow-2xs group-hover:scale-110 transition-transform">
+                          {getServiceIcon(srv.slug)}
+                        </div>
+                      )}
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#0056b3] bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-md font-mono">
                       {srv.categoryLabel}

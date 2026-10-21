@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export function Navbar() {
-  const { settings } = useBusiness();
+  const { settings, adminUser } = useBusiness();
   const {
     currentPath,
     navigate,
@@ -206,14 +206,24 @@ export function Navbar() {
             </nav>
 
             {/* Zone 3: Primary Action + Admin Settings */}
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => navigate('admin-settings')}
                 title="Admin Login & Management Portal"
-                className="px-2.5 py-2 text-slate-700 hover:text-[#0056b3] hover:bg-blue-50/80 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 border border-slate-200/80 text-xs font-bold"
-                aria-label="Admin Portal"
+                className={`px-3 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border text-xs font-bold ${
+                  adminUser.isLoggedIn
+                    ? 'bg-blue-50 text-[#0056b3] border-blue-200 shadow-2xs hover:bg-blue-100'
+                    : 'text-slate-700 hover:text-[#0056b3] hover:bg-blue-50/80 border-slate-200/80'
+                }`}
+                aria-label="Admin Login"
               >
-                <Shield className="w-3.5 h-3.5 text-[#0056b3]" />
-                <span className="hidden xl:inline">Admin Portal</span>
+                <Shield className={`w-3.5 h-3.5 ${adminUser.isLoggedIn ? 'text-emerald-600' : 'text-[#0056b3]'}`} />
+                <span className="inline font-bold">
+                  {adminUser.isLoggedIn ? 'Admin Dashboard' : 'Admin Login'}
+                </span>
+                {adminUser.isLoggedIn && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+                )}
               </button>
 
               <button

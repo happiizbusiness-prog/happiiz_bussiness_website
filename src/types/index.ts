@@ -32,6 +32,7 @@ export interface ServiceDetail {
   title: string;
   shortDesc: string;
   overview: string;
+  imageUrl?: string;
   benefits?: string[];
   deliverables: string[];
   processSteps: { step: string; title: string; desc: string }[];

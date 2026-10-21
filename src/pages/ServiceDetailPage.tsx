@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { SERVICES_DATA } from '../data/servicesData';
 import {
@@ -9,13 +11,17 @@ import {
   ShieldCheck,
   ChevronDown
 } from 'lucide-react';
-import { useState } from 'react';
 
 export function ServiceDetailPage({ slug }: { slug: string }) {
+  const { services } = useBusiness();
   const { navigate, openQuoteModal } = useNavigation();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
-  const service = SERVICES_DATA.find((s) => s.slug === slug) || SERVICES_DATA[0];
+  const allServices = services && services.length > 0 ? services : SERVICES_DATA;
+  const service =
+    allServices.find((s) => s.slug === slug || s.id === slug) ||
+    SERVICES_DATA.find((s) => s.slug === slug) ||
+    SERVICES_DATA[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 space-y-16">
@@ -38,6 +44,16 @@ export function ServiceDetailPage({ slug }: { slug: string }) {
             <span aria-hidden="true">·</span>
             <span>Commercial Deliverables</span>
           </div>
+
+          {service.imageUrl && (
+            <div className="relative aspect-[21/9] sm:aspect-[2.4/1] w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900 mb-2">
+              <img
+                src={service.imageUrl}
+                alt={service.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
             {service.title}
@@ -109,7 +125,7 @@ export function ServiceDetailPage({ slug }: { slug: string }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {service.benefits.map((benefit, i) => (
+          {(service.benefits || []).map((benefit, i) => (
             <div
               key={i}
               className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex items-start gap-3"
@@ -152,7 +168,7 @@ export function ServiceDetailPage({ slug }: { slug: string }) {
             We employ modern, enterprise-proven tools and workflows to deliver durable, scalable assets.
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
-            {service.featuredTech.map((tech) => (
+            {(service.featuredTech || []).map((tech) => (
               <span
                 key={tech}
                 className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-800 shadow-sm"

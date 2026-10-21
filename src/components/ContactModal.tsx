@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export function ContactModal() {
-  const { settings } = useBusiness();
+  const { settings, addInquiry } = useBusiness();
   const { isContactModalOpen, closeContactModal, navigate } = useNavigation();
 
   const [formData, setFormData] = useState({
@@ -72,22 +72,22 @@ export function ContactModal() {
     }
 
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
-    try {
-      const existing = JSON.parse(localStorage.getItem('happiiz_inquiries') || '[]');
-      existing.push({
-        id: `INQ-${Date.now()}`,
-        ...formData,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('happiiz_inquiries', JSON.stringify(existing));
-      setSubmitting(false);
-      setSuccess(true);
-    } catch {
-      setSubmitting(false);
-      setError('Unable to store inquiry. Please contact us via WhatsApp directly.');
-    }
+    addInquiry({
+      id: `INQ-${Date.now()}`,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service: formData.service || 'Contact Inquiry',
+      budget: 'Direct Consultation',
+      message: formData.message,
+      timestamp: new Date().toISOString(),
+      status: 'new',
+      notes: ''
+    });
+    setSubmitting(false);
+    setSuccess(true);
   };
 
   const handleReset = () => {

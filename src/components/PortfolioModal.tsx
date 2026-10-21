@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { PORTFOLIO_PROJECTS } from '../data/portfolioData';
 import { PortfolioProject } from '../types';
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 
 export function PortfolioModal() {
+  const { portfolio } = useBusiness();
   const {
     isPortfolioModalOpen,
     closePortfolioModal,
@@ -22,17 +24,19 @@ export function PortfolioModal() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [activeProject, setActiveProject] = useState<PortfolioProject | null>(null);
 
+  const allProjects = portfolio && portfolio.length > 0 ? portfolio : PORTFOLIO_PROJECTS;
+
   // Initialize or update active project when modal opens
   useEffect(() => {
     if (selectedProjectId) {
-      const found = PORTFOLIO_PROJECTS.find((p) => p.id === selectedProjectId);
+      const found = allProjects.find((p) => p.id === selectedProjectId);
       if (found) {
         setActiveProject(found);
       }
-    } else if (PORTFOLIO_PROJECTS.length > 0 && !activeProject) {
-      setActiveProject(PORTFOLIO_PROJECTS[0]);
+    } else if (allProjects.length > 0 && !activeProject) {
+      setActiveProject(allProjects[0]);
     }
-  }, [selectedProjectId, isPortfolioModalOpen]);
+  }, [selectedProjectId, isPortfolioModalOpen, allProjects]);
 
   // Handle ESC key and scroll locking
   useEffect(() => {
@@ -56,7 +60,7 @@ export function PortfolioModal() {
 
   const categories = ['All', 'Web Development', 'Branding & Design', 'Digital Marketing'];
 
-  const filteredProjects = PORTFOLIO_PROJECTS.filter((p) => {
+  const filteredProjects = allProjects.filter((p) => {
     if (activeFilter === 'All') return true;
     return p.category === activeFilter;
   });

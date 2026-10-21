@@ -1,17 +1,20 @@
 import { useState } from 'react';
+import { useBusiness } from '../context/BusinessContext';
 import { useNavigation } from '../context/NavigationContext';
 import { PORTFOLIO_PROJECTS } from '../data/portfolioData';
 import { PortfolioProject } from '../types';
 import { ArrowRight, X, ExternalLink, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export function PortfolioPage() {
+  const { portfolio } = useBusiness();
   const { openQuoteModal } = useNavigation();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [activeProject, setActiveProject] = useState<PortfolioProject | null>(null);
 
+  const allProjects = portfolio && portfolio.length > 0 ? portfolio : PORTFOLIO_PROJECTS;
   const categories = ['All', 'Web Development', 'Digital Marketing', 'Branding & Design'];
 
-  const filtered = PORTFOLIO_PROJECTS.filter((p) => {
+  const filtered = allProjects.filter((p) => {
     if (selectedCategory === 'All') return true;
     return p.category === selectedCategory;
   });
